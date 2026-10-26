@@ -1,0 +1,35 @@
+# Installed dependencies, generated builds and local tooling
+node_modules/
+dist/
+.netlify/
+.vite/
+coverage/
+playwright-report/
+test-results/
+__pycache__/
+*.py[cod]
+*.tsbuildinfo
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.agents/
+.codex/
+.aws/
+.claude/settings.local.json
+
+# Local credentials (an example template may be committed)
+.env
+.env.*
+!.env.example
+
+# Large/private source material and QC captures: back up separately.
+# The deployable exports in game/public/ MUST stay in Git.
+/art/
+/cards/
+/strip/
+/ref/*
+!/ref/*.md
+/music/*.mp3
+/pipeline/inputs/

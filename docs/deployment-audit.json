@@ -1,0 +1,151 @@
+{
+  "production": [
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "initial": {
+        "requests": 130,
+        "bytes": 38502985,
+        "models": 51,
+        "modelBytes": 26769216,
+        "js": [
+          {
+            "name": "/assets/index-CiqP6GdD.js",
+            "bytes": 820094
+          },
+          {
+            "name": "/assets/three-Ba0mAMwE.js",
+            "bytes": 570111
+          },
+          {
+            "name": "/assets/phaser-0RJB29YE.js",
+            "bytes": 1478585
+          }
+        ],
+        "gpu": "ANGLE (NVIDIA, Vulkan 1.4.329 (NVIDIA NVIDIA GeForce RTX 5080 (0x00002C02)), NVIDIA)"
+      },
+      "zones": [
+        {
+          "zone": "Labu Lanjut",
+          "canvas": 1,
+          "label": "Labu Lanjut"
+        },
+        {
+          "zone": "Bukit Bintang",
+          "canvas": 1,
+          "label": "Bukit Bintang"
+        },
+        {
+          "zone": "Lorbel",
+          "canvas": 1,
+          "label": "Lorbel"
+        },
+        {
+          "zone": "Lakefront",
+          "canvas": 1,
+          "label": "Lakefront"
+        },
+        {
+          "zone": "KLIA",
+          "canvas": 1,
+          "label": "KLIA"
+        },
+        {
+          "zone": "Nyomnyom",
+          "canvas": 1,
+          "label": "Nyomnyom City"
+        },
+        {
+          "zone": "Photobooth",
+          "canvas": 1,
+          "label": "FotoBooth"
+        },
+        {
+          "zone": "Putrajaya",
+          "canvas": 1,
+          "label": "Putrajaya"
+        },
+        {
+          "zone": "Litar Sepang",
+          "canvas": 1,
+          "label": "Litar Sepang"
+        }
+      ],
+      "errors": [],
+      "warnings": [
+        "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
+      ]
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "initial": {
+        "requests": 128,
+        "bytes": 38221624,
+        "models": 51,
+        "modelBytes": 26769216,
+        "js": [
+          {
+            "name": "/assets/index-CiqP6GdD.js",
+            "bytes": 820094
+          },
+          {
+            "name": "/assets/three-Ba0mAMwE.js",
+            "bytes": 570111
+          },
+          {
+            "name": "/assets/phaser-0RJB29YE.js",
+            "bytes": 1478585
+          }
+        ],
+        "gpu": "ANGLE (NVIDIA, Vulkan 1.4.329 (NVIDIA NVIDIA GeForce RTX 5080 (0x00002C02)), NVIDIA)"
+      },
+      "zones": [],
+      "errors": [],
+      "warnings": [
+        "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
+      ]
+    }
+  ],
+  "assetFailures": [],
+  "regressions": {
+    "malformedSave": {
+      "errors": [
+        "TypeError: Cannot read properties of null (reading 'introSeen')"
+      ],
+      "menuVisible": 0
+    },
+    "pendingMic": {
+      "done": false,
+      "meterHidden": true
+    }
+  },
+  "externalFailures": [],
+  "assetsChecked": 478,
+  "auditDate": "2026-10-27",
+  "build": {
+    "node": "22.22.1",
+    "vite": "5.4.11",
+    "cleanInstallPassed": true,
+    "typecheckPassed": true,
+    "buildPassed": true,
+    "productionDependencyAdvisories": 0,
+    "fullAuditAffectedDependencies": {
+      "high": 1,
+      "moderate": 1
+    },
+    "distBytes": 70906459
+  },
+  "snapshot": {
+    "files": 567,
+    "sourceAndRuntimeMatchWorkspace": true,
+    "changedPaths": [],
+    "sourceAndRuntimeManifestSha256": "8e31fba8bf8b902f9b10b6f095cee97766347f2f1ec977d36a9004ed032d8b8f",
+    "isolatedProductionOrigin": "http://localhost:5190",
+    "browserGPUIsPhysicalPhone": false
+  }
+}

@@ -1,0 +1,349 @@
+{
+  "bowat": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/bowat.png"
+  },
+  "bg_bowat": {
+    "type": "background",
+    "size": [
+      320,
+      180
+    ]
+  },
+  "megabowat": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/megabowat.png"
+  },
+  "bolat": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/bolat.png"
+  },
+  "bolatex": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/bolatex.png"
+  },
+  "snorlax": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/snorlax.png"
+  },
+  "blep": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/blep.png"
+  },
+  "qishex": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/qishex.png"
+  },
+  "megaqish": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/megaqish.png"
+  },
+  "faris": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/faris.png"
+  },
+  "qish": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/qish.png"
+  },
+  "qishback": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/qishback.png"
+  },
+  "bowatback": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/bowatback.png"
+  },
+  "slothfaris": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/slothfaris.png"
+  },
+  "babah": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/babah.png"
+  },
+  "bg_title": {
+    "type": "background",
+    "size": [
+      320,
+      180
+    ]
+  },
+  "bg_bolat": {
+    "type": "background",
+    "size": [
+      320,
+      180
+    ]
+  },
+  "bg_snorlax": {
+    "type": "background",
+    "size": [
+      320,
+      180
+    ]
+  },
+  "bg_blep": {
+    "type": "background",
+    "size": [
+      320,
+      180
+    ]
+  },
+  "bg_megabowat": {
+    "type": "background",
+    "size": [
+      320,
+      180
+    ]
+  },
+  "bg_bolatex": {
+    "type": "background",
+    "size": [
+      320,
+      180
+    ]
+  },
+  "bg_qishex": {
+    "type": "background",
+    "size": [
+      320,
+      180
+    ]
+  },
+  "bg_finale": {
+    "type": "background",
+    "size": [
+      320,
+      180
+    ]
+  },
+  "item_cookie": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_fart": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_heart": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "busker": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/busker.png"
+  },
+  "cajon": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/cajon.png"
+  },
+  "crowd": {
+    "type": "sprite",
+    "frames": 4,
+    "cell": 96,
+    "source": "art/retro/raw/crowd.png"
+  },
+  "item_kiss": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_cuddle": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_alarm": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_meat": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_cake": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_ramen": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_malatang": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_pot": {
+    "type": "item",
+    "size": [
+      96,
+      96
+    ]
+  },
+  "item_awning": {
+    "type": "item",
+    "size": [
+      96,
+      96
+    ]
+  },
+  "item_cloud": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_sleep": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_fire": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_star": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_camera": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_film": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_lily": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_pass": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_request": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_resit": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_spanner": {
+    "type": "item",
+    "size": [
+      64,
+      64
+    ]
+  },
+  "item_cardback": {
+    "type": "item",
+    "size": [
+      96,
+      96
+    ]
+  },
+  "item_playerplane": {
+    "type": "item",
+    "size": [
+      96,
+      96
+    ]
+  },
+  "item_enemyplane": {
+    "type": "item",
+    "size": [
+      96,
+      96
+    ]
+  }
+}

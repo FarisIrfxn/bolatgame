@@ -1,0 +1,80 @@
+{
+  "loading": [
+    {
+      "heldAssetBlockedStart": true,
+      "responsiveSizes": 4
+    },
+    {
+      "failedAssetRetry": true,
+      "preservedCompletedDownloads": true
+    },
+    {
+      "allAssetsDownloaded": 471,
+      "bytes": 67532031,
+      "cachedAssets": 471,
+      "cachedModels": 104,
+      "pressStartOpenedDream": true
+    }
+  ],
+  "microphone": [
+    {
+      "mode": "pending-keyboard",
+      "done": true,
+      "stops": 1,
+      "closed": 0,
+      "contexts": 0
+    },
+    {
+      "mode": "pending-touch",
+      "done": true,
+      "stops": 1,
+      "closed": 0,
+      "contexts": 0
+    },
+    {
+      "mode": "denied",
+      "done": true,
+      "stops": 0,
+      "closed": 0,
+      "contexts": 0
+    },
+    {
+      "mode": "accepted",
+      "done": true,
+      "stops": 1,
+      "closed": 1,
+      "contexts": 1
+    },
+    {
+      "mode": "setup-failure",
+      "done": true,
+      "stops": 1,
+      "closed": 0,
+      "contexts": 1
+    },
+    {
+      "mode": "cancel-pending",
+      "done": true,
+      "stops": 1,
+      "closed": 0,
+      "contexts": 0
+    },
+    {
+      "mode": "cancel-active",
+      "done": true,
+      "stops": 1,
+      "closed": 1,
+      "contexts": 1
+    }
+  ],
+  "errors": [],
+  "passed": true,
+  "date": "2026-10-27",
+  "versions": {
+    "vite": "6.4.5",
+    "esbuild": "0.25.12",
+    "node": "22.22.1"
+  },
+  "cleanInstallAndBuildPassed": true,
+  "fullNpmAuditVulnerabilities": 0
+}

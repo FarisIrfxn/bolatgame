@@ -1,0 +1,17 @@
+[build]
+  base = "game"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# This personal game should not be indexed. This does not restrict access.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+# Keep Netlify's default cache revalidation: public art has stable filenames,
+# so /assets/* must not receive a blanket immutable cache rule.
+# There is no URL router, so missing assets should remain real 404 responses.

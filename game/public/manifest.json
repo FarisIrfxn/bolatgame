@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "Bolat The Game",
+  "short_name": "Bolat The Game",
+  "lang": "ms",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff3f8",
+  "theme_color": "#f63891",
+  "icons": [
+    {
+      "src": "/icons/bowat-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/bowat-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

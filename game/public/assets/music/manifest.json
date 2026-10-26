@@ -1,0 +1,66 @@
+{
+  "gimmeLove": {
+    "url": "/assets/music/gimmeLove.mp3",
+    "title": "Joji — Gimme Love (8-bit)",
+    "source": "Joji - Gimme Love ( 8 Bit Cover).mp3",
+    "sourceSha256": "a1f7d17cedeb88622d67072ba4d3f89d54fd53866063f177b02a6959268759a9",
+    "start": 48.642316,
+    "duration": 24.303797,
+    "gainDb": -2.39,
+    "rmsDb": -19.5314,
+    "peakDb": -6.449,
+    "bytes": 292510,
+    "bpm": 158
+  },
+  "sanctuary": {
+    "url": "/assets/music/sanctuary.mp3",
+    "title": "Joji — SANCTUARY (8-bit)",
+    "source": "Joji - Sanctuary (8 Bit Cover).mp3",
+    "sourceSha256": "6df2971df83eacbc8815c7c026a1828e3cb98f1ec19b46da6731425cc6177890",
+    "start": 105.765454,
+    "duration": 22.857143,
+    "gainDb": -5.94,
+    "rmsDb": -20.9186,
+    "peakDb": -6.8809,
+    "bytes": 274956,
+    "bpm": 168
+  },
+  "overworld": {
+    "url": "/assets/music/overworld.mp3",
+    "title": "Laufey — From The Start (8-bit)",
+    "source": "8-bit From the Start by Laufey.mp3",
+    "sourceSha256": "cbb0f0e9ca177d9ed16fdbd127d1881dbeaa1d3c7cf886ae658fa75477d3fea9",
+    "start": 0,
+    "duration": null,
+    "gainDb": -2.95,
+    "rmsDb": -22.2592,
+    "peakDb": -4.8305,
+    "bytes": 1902176
+  },
+  "loverGirl": {
+    "url": "/assets/music/loverGirl.mp3",
+    "title": "Laufey — Lover Girl (8-bit)",
+    "source": "Laufey - Lover Girl (8-bit Remix).mp3",
+    "sourceSha256": "b9d06f89df6e662138a7cd6b1adb0156498d92ba0125b9fab236b85cc1d9f22d",
+    "start": 27.009577,
+    "duration": 23.272727,
+    "gainDb": -6.56,
+    "rmsDb": -21.6408,
+    "peakDb": -9.7258,
+    "bytes": 279972,
+    "bpm": 82.5,
+    "bars": 16
+  },
+  "ending": {
+    "url": "/assets/music/ending.mp3",
+    "title": "Bryant Barnes — I'd Rather Pretend (8-bit)",
+    "source": "Bryant Barnes - I'd Rather Pretend Chiptune Cover, 8 Bits Cover #chiptunemusic #8bitsmusic.mp3",
+    "sourceSha256": "518ede79735b539e29139b8667afbf87fb88245471c65769529e40a2ed4a93b1",
+    "start": 0,
+    "duration": null,
+    "gainDb": -3.68,
+    "rmsDb": -23.3541,
+    "peakDb": -4.5955,
+    "bytes": 5830574
+  }
+}

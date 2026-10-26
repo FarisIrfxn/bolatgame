@@ -1,0 +1,41 @@
+{
+  "gimmeLove": {
+    "source": "Joji - Gimme Love ( 8 Bit Cover).mp3",
+    "title": "Joji — Gimme Love (8-bit)",
+    "start": 48.642316,
+    "duration": 24.303797,
+    "bpm": 158,
+    "note": "Repeated hook before the slow beat switch; 16 bars. Title and Joji boss turns."
+  },
+  "sanctuary": {
+    "source": "Joji - Sanctuary (8 Bit Cover).mp3",
+    "title": "Joji — SANCTUARY (8-bit)",
+    "start": 105.765454,
+    "duration": 22.857143,
+    "bpm": 168,
+    "note": "Final repeated chorus section; 16 bars. Alternate Joji boss turns."
+  },
+  "overworld": {
+    "source": "8-bit From the Start by Laufey.mp3",
+    "title": "Laufey — From The Start (8-bit)",
+    "start": 0,
+    "duration": null,
+    "note": "Entire supplied recording, start to finish, looping continuously across zone changes."
+  },
+  "loverGirl": {
+    "source": "Laufey - Lover Girl (8-bit Remix).mp3",
+    "title": "Laufey — Lover Girl (8-bit)",
+    "start": 27.009577,
+    "duration": 23.272727,
+    "bpm": 82.5,
+    "bars": 16,
+    "note": "First chorus, eight bars at half-time (82.5 / 165 BPM). Repeat twice for a 16-bar rhythm round. Beat zero is the start of this cut."
+  },
+  "ending": {
+    "source": "Bryant Barnes - I'd Rather Pretend Chiptune Cover, 8 Bits Cover #chiptunemusic #8bitsmusic.mp3",
+    "title": "Bryant Barnes — I'd Rather Pretend (8-bit)",
+    "start": 0,
+    "duration": null,
+    "note": "Supplied ending track replaces My Everything. Play through the scrapbook, letter and secret card; loop if needed."
+  }
+}

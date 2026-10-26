@@ -1,0 +1,113 @@
+/* October playtest corrections: quiet title controls, clear speaker roles, and ending spacing. */
+/* Landing: the logo pops in big, Bolat and Bowat walk in from the sides. Press Start shrinks it for the menu. */
+.title-screen .logo img { animation: title-pop 1.4s .15s cubic-bezier(.34,1.45,.64,1) backwards, title-breathe 4.5s 1.6s ease-in-out infinite; transform-origin: 50% 70%; }
+.title-screen .logo, .title-screen .logo img { transition: width .6s cubic-bezier(.4,0,.2,1), max-height .6s cubic-bezier(.4,0,.2,1); }
+.title-screen.big .logo { width: min(780px, 100%); }
+.title-screen.big .logo img { max-height: 54vh; }
+@keyframes title-pop { 0% { transform: scale(.2); opacity: 0; } 35% { opacity: 1; } }
+/* Phones: the landing logo already fills the width, so the menu state is the smaller one. */
+@media(max-width:600px) { .title-screen:not(.big) .logo { width: 78%; margin-inline: auto; } }
+.title-runner { animation: runner-in-left 1.8s .25s cubic-bezier(.25,.6,.35,1) backwards; }
+.title-runner.bowat { animation-name: runner-in-right; }
+@keyframes runner-in-left { from { translate: -45vw 0; } }
+@keyframes runner-in-right { from { translate: 45vw 0; } }
+@keyframes title-breathe { 50% { transform: translateY(-9px) rotate(-.7deg) scale(1.015); } }
+.title-screen .title-menu { align-items: center; justify-items: center; justify-content: center; width: 100%; margin-inline: auto; gap: 12px; overflow: visible; }
+.title-screen .tm-btn, .title-screen .tm-btn.sel {
+  display: block; position: relative; width: fit-content; min-width: 170px; margin: 0;
+  padding: 5px 30px; border: 0; border-radius: 0; background: none; box-shadow: none;
+  color: #8f5878; text-align: center; font: 400 clamp(1.35rem,3vw,2rem)/1.35 var(--font-title);
+  transform: none; text-shadow: 0 2px #fff7ed;
+}
+.title-screen .tm-btn::before { content: '▸'; position: absolute; left: 2px; top: 50%; translate: 0 -50%; opacity: 0; }
+.title-screen .tm-btn.sel { color: #ad4f7c; }
+.title-screen .tm-btn.sel::before { opacity: 1; animation: menu-arrow 1s ease-in-out infinite; }
+@keyframes menu-arrow { 50% { translate: 4px -50%; } }
+.vn-fig[hidden] { display: none !important; }
+.dialog-narrator .box { background: #f2f1fff5; border-color: #d8cce8; border-radius: 12px 24px 24px 12px; }
+.dialog-narrator .name { background: #9b88b7; font-size: .72rem; }
+.dialog-narrator .text { color: #74657f; font-style: italic; font-weight: 600; }
+.dialog-sign .name { background: #9c9873; }
+.dialog-sign .box { background: #fff8e1f5; }
+.kisah-cap { white-space: pre-line; }
+.letter-shell { gap: clamp(23px,4vh,36px); max-height: 88dvh; }
+.letter-next { margin-top: 8px; }
+.the-end.has-art { padding: 0; isolation: isolate; background: linear-gradient(#f4cfdf,#fff0dc); }
+.ending-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.ending-message { position: absolute; z-index: 1; left: 50%; top: 50%; translate: -50% -50%; width: min(34vw,390px); display: grid; justify-items: center; gap: 12px; animation: ending-keepsake .7s ease-out both; }
+.ending-logo { width: min(112%,420px); max-width: none; height: clamp(135px,27vh,205px); object-fit: contain; filter: drop-shadow(0 4px 0 #fff2d7) drop-shadow(0 8px 8px #56203b40); }
+.ending-keepsake { position: relative; width: 100%; box-sizing: border-box; display: grid; justify-items: center; gap: 15px; padding: 23px 25px 25px; border: 3px solid #fff1d7; border-radius: 26px; background: linear-gradient(150deg,#663250,#43223f); box-shadow: 0 5px 0 #ca8da7,0 8px 0 #71344f,0 18px 30px #55223e42; }
+.ending-keepsake::before { content: ''; position: absolute; inset: 6px; border: 1px solid #eab7c347; border-radius: 18px; pointer-events: none; }
+.ending-word { display: flex; align-items: center; justify-content: center; gap: clamp(10px,1.5vw,20px); }
+.ending-word > span { color: #efb9ba; font-size: 15px; }
+.the-end.has-art h1 { margin: 0; font-size: clamp(38px,5.3vw,70px); line-height: 1; color: #fff1cd; -webkit-text-stroke: 0; text-shadow: 0 4px 0 #30172d; rotate: none; }
+.ending-flourish { display: flex; align-items: center; gap: 10px; width: 62%; color: #edb5c4; font-size: 12px; line-height: 1; }
+.ending-flourish i { flex: 1; height: 1px; background: #b67e96; }
+.the-end.has-art .ending-greeting { margin: 0; max-width: 24ch; font: 800 clamp(15px,1.6vw,20px)/1.45 var(--font-body); color: #ffe8ef; text-wrap: balance; }
+.ending-continue { position: relative; display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; max-width: 270px; min-height: 48px; margin: 3px 0 2px; padding: 8px 15px; border: 1px solid #ffbad9; border-radius: 12px; background: linear-gradient(#cd2b78,#b51c65); color: #fff; box-shadow: inset 0 2px 0 #ffa0cb,0 4px 0 #8c1a53; font: 900 clamp(13px,1.25vw,16px)/1.2 var(--font-body); text-shadow: 0 1px #a32162; cursor: pointer; transition: transform .15s,filter .15s; }
+.ending-continue:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.ending-continue:active { transform: translateY(3px); box-shadow: inset 0 2px 0 #ffa0cb,0 1px 0 #9c235b; }
+.ending-continue:focus-visible { outline: 3px solid #ffe2a3; outline-offset: 5px; }
+.ending-continue-arrow { display: grid; place-items: center; flex: 0 0 25px; height: 25px; border-radius: 50%; background: #fff2e8; color: #ac1b65; text-shadow: none; font: 900 20px/1 var(--font-body); animation: ending-arrow 1.8s ease-in-out infinite; }
+@keyframes ending-arrow { 50% { translate: 3px 0; } }
+@keyframes ending-keepsake { from { opacity: 0; transform: translateY(16px) scale(.86); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (max-aspect-ratio: 4/5) {
+  .ending-poster { top: 4dvh; height: auto; aspect-ratio: 1672 / 941; }
+  .ending-message { top: 39%; translate: -50% 0; width: min(86vw,350px); gap: 10px; }
+  .ending-logo { width: min(100%,285px); height: clamp(65px,11dvh,100px); }
+  .ending-keepsake { gap: 12px; padding: 19px 23px 23px; }
+  .the-end.has-art h1 { font-size: clamp(38px,12vw,48px); }
+  .the-end.has-art .ending-greeting { font-size: 16px; }
+  .ending-continue { font-size: 15px; }
+}
+@media (max-height: 500px) and (min-aspect-ratio: 1/1) {
+  .ending-message { width: min(31vw,340px); gap: 8px; }
+  .ending-logo { height: 21dvh; }
+  .ending-keepsake { gap: 9px; padding: 15px 20px 18px; border-radius: 20px; }
+  .ending-keepsake::before { border-radius: 13px; }
+  .the-end.has-art h1 { font-size: clamp(32px,10.5dvh,48px); }
+  .the-end.has-art .ending-greeting { font-size: 14px; }
+  .ending-continue { min-height: 38px; font-size: 13px; padding: 6px 10px; gap: 8px; }
+  .ending-continue-arrow { height: 21px; flex-basis: 21px; font-size: 17px; }
+}
+body:has(.storybook-runner) .touch .btn-a { background: #ff2697; color: #fff; border: 2px solid #fff5fa; box-shadow: inset 0 3px 0 #ff8fc9,0 5px 0 #aa0e65,0 8px 16px #a20d6740; }
+@media(prefers-reduced-motion:reduce) { .ending-message,.ending-continue-arrow { animation: none; } }
+.dream-scene { width: min(670px,78vw); height: min(390px,47vh); bottom: max(230px,29vh); }
+.dream-scene img.d-sofa { inset: auto 0 0; width: 100%; height: auto; z-index: 1; }
+.dream-scene img.d-faris, .dream-scene img.d-qish { height: 83%; width: 36%; object-fit: contain; bottom: 13%; z-index: 2; }
+.dream-scene img.d-faris { left: 13%; }
+.dream-scene img.d-qish { right: 13%; }
+@media(max-width:600px) { .dream-scene { width: 96vw; height: min(39vh,330px); bottom: max(250px,35vh); } }
+@media(max-height:500px) and (orientation:landscape) {
+  .dream-scene { width: min(470px,58vw); height: 59vh; bottom: 115px; }
+  .letter-shell { gap: 17px; max-height: 90dvh; }
+  .letter-next { margin-top: 0; }
+  .the-end { padding-bottom: 65px; }
+  .the-end small { bottom: 20px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .title-screen .logo img,.title-screen .tm-btn.sel::before,.the-end small,.title-runner { animation: none; }
+  .title-screen .logo, .title-screen .logo img { transition: none; }
+}
+.dream-scene img.d-sofa { height: 100%; object-fit: fill; }
+/* The chat lives in a solid graphite handset rather than a pink paper panel. */
+.phone { position: relative; isolation: isolate; background: #efece5; background-image: none; border: 10px solid #292b32; border-radius: 36px; box-shadow: inset 0 0 0 2px #565b65,0 0 0 2px #777c86,0 12px 0 #1d1e25,0 28px 50px #201d3266; padding-bottom: 13px; }
+.phone::before { content:''; position:absolute; z-index:2; width:54px; height:5px; border-radius:9px; background:#737780; top:-7px; left:calc(50% - 27px); }
+.phone::after { content:''; position:absolute; bottom:3px; left:calc(50% - 42px); width:84px; height:4px; background:#32353c; border-radius:5px; }
+.phone-status { background:#292b32; color:#f6f6f5; }
+.phone-head { background:#287264; color:#fff; }
+.phone-head small { color:#dcebe4; }
+.phone-chat { background:#eae8dd; }
+.msg { border-color:#d4d8cb; color:#31463c; }
+.msg.qish { background:#d6f2cb; }.msg.faris { background:#fff; }
+.msg small { color:#748879; }.phone-input { background:#f7f7f2; color:#7b877c; }
+
+body[data-input-device="keyboard"] #ui > .touch,
+body[data-input-device="gamepad"] #ui > .touch { display: none; }
+
+/* Keyboard words need a keycap wide enough for the whole label. */
+body[data-input-device="keyboard"] kbd[data-control] {
+  display: inline-grid; place-items: center; width: auto; min-width: 3.5em;
+  height: auto; min-height: 1.55em; padding: .12em .5em; border-radius: 5px;
+  line-height: 1.35; box-sizing: border-box; white-space: nowrap; flex-shrink: 0;
+}
