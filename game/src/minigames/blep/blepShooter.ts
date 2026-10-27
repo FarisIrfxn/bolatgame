@@ -182,7 +182,7 @@ export class BlepShooter extends Phaser.Scene {
     this.ship.y = Phaser.Math.Clamp(this.ship.y + vy * 420 * dt, H / 2, H - 90);
     this.ship.angle = vx * 10;
 
-    if (input.pressed("a")) {
+    if (input.consumePressed("a")) {
       const h = this.hearts.create(this.ship.x, this.ship.y - 70, "heart") as Phaser.Physics.Arcade.Image;
       h.setDisplaySize(32, 32).setVelocityY(-900);
       sfx.blip();

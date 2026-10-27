@@ -2025,3 +2025,24 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
 - Build TypeScript/Vite lulus selepas perubahan; Safari iPhone dan laptop sebenar belum
   diuji. Log peranti masih diperlukan untuk mengesahkan sama ada profil Low mengelakkan
   kehilangan konteks.
+
+### Menu finale seragam, input A dan skrin sedia bandar (2026-10-27)
+
+- Pilihan move Raja Nonchalant kini satu menu DOM untuk touch, gamepad dan keyboard;
+  arah/stick memindah fokus, A/Space mengesahkan, touch menekan pilihan. Fasa move
+  masih berubah selepas Mega Evolution.
+- Tekanan butang baru disimpan sebagai input buffer 220ms khusus untuk loop Phaser,
+  supaya loop boss tidak terlepas edge satu frame daripada loop input utama. Semantik
+  `pressed()` dunia/UI kekal; reset/rotate membersihkan buffer.
+- Boss Phaser dan runner kini mengukur nisbah terus daripada bounds host sebenar,
+  bukan bergantung pada nilai viewport yang mungkin masih lama ketika UI Android
+  berubah. Panorama lebar dirender terus di dalam canvas dan menutup seluruh camera;
+  CSS backdrop hanya lapisan pertahanan, bukan sumber gambar utama.
+- Pemuatan bandar menggunakan latar mimpi pastel tanpa panel. Sprite baharu Bolat
+  dan Bowat menari di tengah, dengan nama bandar dan bar gerak sahaja. Sumber dan
+  prompt di `art/ui/README.md`.
+- Build production lulus. Audit Chromium touch 915×412 / DPR 2.75 mengesahkan semua
+  lapan boss: backing canvas ikut nisbah host dan lima sampel tepi kanan setiap boss
+  alpha 255. Tekanan A gamepad singkat kekal dalam buffer lalu digunakan sekali;
+  finale memaparkan satu menu DOM yang sama. Android dan gamepad fizikal masih perlu
+  semakan akhir kerana audit ini menggunakan emulasi browser.

@@ -201,6 +201,6 @@ export class BolatexMemory extends Phaser.Scene {
       sfx.blip();
     }
     this.lastAxis = { x: dx, y: dy };
-    if (input.pressed("a")) this.pick();
+    if (input.consumePressed("a")) this.pick();
   }
 }

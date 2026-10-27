@@ -21,6 +21,15 @@
 .startup-retry[hidden] { display: none; }
 .startup-retry:focus-visible { outline: 3px solid #754e72; outline-offset: 4px; }
 .startup-loading.preparing .startup-track > div { animation: startup-ready 1s ease-in-out infinite alternate; }
+.city-loading-content {
+  position:relative; z-index:1; width:min(680px,90cqw); padding:10px 24px 18px;
+}
+.city-loading-dance { display:block; width:min(560px,84cqw); height:min(410px,57cqh); margin:0 auto -12px; object-fit:contain; animation:city-duo-dance .52s ease-in-out infinite alternate; }
+.city-loading-content h2 { margin:0 0 14px; color:#754e72; font:400 clamp(23px,calc(var(--ui-vw,1cqw)*4.3),31px)/1.2 'Bagel Fat One','Nunito',sans-serif; text-shadow:0 2px 0 #fff; }
+.city-loading-track { width:min(460px,76cqw); height:13px; margin:0 auto; padding:2px; overflow:hidden; border:1px solid #dcb3ce; border-radius:20px; background:#fff8f4b8; }
+.city-loading-track span { display:block; width:35%; height:100%; border-radius:12px; background:linear-gradient(90deg,#eaa4c5,#cf81b1); animation:city-loading-sweep 1.15s ease-in-out infinite alternate; }
+@keyframes city-duo-dance { from { transform:translateY(4px) rotate(-1.5deg) scale(.985); } to { transform:translateY(-8px) rotate(1.5deg) scale(1.015); } }
+@keyframes city-loading-sweep { from { transform:translateX(0); } to { transform:translateX(175%); } }
 @keyframes startup-breathe { 50% { transform: translateY(-5px) scale(1.025, .98); } }
 @keyframes startup-ready { to { opacity: .5; } }
 @container game (max-height: 450px) {
@@ -28,8 +37,11 @@
   .startup-mascot { height: 90px; margin-bottom: 8px; }
   .startup-status { min-height: 0; margin-bottom: 8px; }
   .startup-size { margin-top: 6px; }
+  .city-loading-content { width:min(620px,90cqw); padding:4px 20px 10px; }
+  .city-loading-dance { height:210px; width:min(420px,70cqw); margin-bottom:-12px; }
+  .city-loading-content h2 { margin-bottom:8px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .startup-mascot img, .startup-loading.preparing .startup-track > div { animation: none; }
+  .startup-mascot img, .startup-loading.preparing .startup-track > div, .city-loading-dance, .city-loading-track span { animation: none; }
   .startup-track > div { transition: none; }
 }

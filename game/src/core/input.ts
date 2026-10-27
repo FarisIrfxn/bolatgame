@@ -22,6 +22,8 @@ class Input {
   private touchButtons = new Set<Button>();
   private now = new Set<Button>();
   private prev = new Set<Button>();
+  /** Keep a new press briefly so a separate Phaser frame loop cannot miss it. */
+  private pendingPresses = new Map<Button, number>();
   private stick = { x: 0, y: 0 };
   lastDevice: "keyboard" | "gamepad" | "touch" = matchMedia("(pointer: coarse)").matches ? "touch" : "keyboard";
   private padId = "";
@@ -60,6 +62,7 @@ class Input {
   /** Rotating, opening browser UI or switching apps must never leave an action held. */
   reset() {
     this.keys.clear(); this.latched.clear(); this.touchButtons.clear();
+    this.pendingPresses.clear();
     this.touchAxis = { x: 0, y: 0 }; this.stick = { x: 0, y: 0 };
     this.now.clear(); this.prev.clear();
   }
@@ -113,6 +116,13 @@ class Input {
     y += this.touchAxis.y;
     for (const b of this.touchButtons) this.now.add(b);
 
+    const now = performance.now();
+    for (const b of ["a", "b", "start"] as Button[]) {
+      if (this.now.has(b) && !this.prev.has(b)) this.pendingPresses.set(b, now);
+      const pressedAt = this.pendingPresses.get(b);
+      if (pressedAt !== undefined && now - pressedAt > 220) this.pendingPresses.delete(b);
+    }
+
     const len = Math.hypot(x, y);
     this.stick = len > 1 ? { x: x / len, y: y / len } : { x, y };
   }
@@ -126,8 +136,17 @@ class Input {
     return this.now.has(b);
   }
 
+  /** Edge for systems that run on the same main frame clock as poll(). */
   pressed(b: Button) {
     return this.now.has(b) && !this.prev.has(b);
+  }
+
+  /** Buffered edge for Phaser/timer loops that can run between main input frames. */
+  consumePressed(b: Button) {
+    const pressedAt = this.pendingPresses.get(b);
+    if (pressedAt === undefined) return false;
+    this.pendingPresses.delete(b);
+    return performance.now() - pressedAt <= 220;
   }
 }
 

@@ -183,7 +183,7 @@ export class MegaBowatFlappy extends Phaser.Scene {
   update(_t: number, deltaMs: number) {
     const dt = deltaMs / 1000;
     if (this.done) return;
-    const flap = input.pressed("a") || this.tapped;
+    const flap = input.consumePressed("a") || this.tapped;
     this.tapped = false;
     if (flap) {
       if (!this.started) {

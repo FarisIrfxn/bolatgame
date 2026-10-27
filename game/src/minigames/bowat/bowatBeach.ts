@@ -264,7 +264,7 @@ export class BowatBeach extends Phaser.Scene {
     const pb = this.player.body;
     const onGround = pb.blocked.down || pb.touching.down;
     this.coyote = onGround ? 0.12 : Math.max(0, this.coyote - dt);
-    this.jumpBuffer = input.pressed("a") ? 0.14 : Math.max(0, this.jumpBuffer - dt);
+    this.jumpBuffer = input.consumePressed("a") ? 0.14 : Math.max(0, this.jumpBuffer - dt);
 
     const ax = this.started && !this.won ? input.axis().x : 0;
     pb.setVelocityX(ax * 380);

@@ -2,7 +2,6 @@ import Phaser from "phaser";
 import type { BossId } from "../content/bosses";
 import { paperBorder } from "../core/paperBorder";
 import { input } from "../core/input";
-import { gameViewport } from "../core/viewport";
 
 export const ART_ROOT = "/assets/storybook";
 const CHARACTERS = ["bowat", "bowatback", "faris", "bolat", "bolatex", "snorlax", "blep", "megabowat", "qishex", "megaqish", "busker", "cajon", "crowd"] as const;
@@ -27,6 +26,7 @@ const SCENE_ART: Record<BossId, { characters: IllustratedCharacter[]; items: Ill
 /** Smooth art shares the original hitboxes, input and assist rules. */
 export function preloadStorybook(scene: Phaser.Scene, boss: BossId, aliases: Record<string, string> = {}) {
   scene.load.image("art_background", `${ART_ROOT}/bg_${boss}.webp`);
+  scene.load.image("art_background_wide", `/assets/mobile/bg_${boss}.webp`);
   const { characters, items } = SCENE_ART[boss];
   for (const id of characters) scene.load.spritesheet(`art_${id}`, `${ART_ROOT}/${id}.png`, { frameWidth: 256, frameHeight: 256 });
   for (const id of items) scene.load.image(`art_${id}`, `${ART_ROOT}/item_${id}.png`);
@@ -57,13 +57,25 @@ export function preloadStorybook(scene: Phaser.Scene, boss: BossId, aliases: Rec
 }
 
 export function illustratedBackdrop(scene: Phaser.Scene) {
-  const background = scene.add.image(0, 0, "art_background").setOrigin(0).setDisplaySize(1280, 720).setDepth(-1000);
-  // Non-16:9 layouts use the matching full-bleed CSS backdrop behind the arena.
-  // Keeping only one copy avoids a second, differently cropped image on laptops.
-  const sync = () => background.setVisible(Math.abs(gameViewport.width / gameViewport.height - 1280 / 720) <= .005);
-  sync(); window.addEventListener("gameviewportresize", sync);
-  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener("gameviewportresize", sync));
-  return background;
+  const normal = scene.add.image(640, 360, "art_background").setDepth(-1000);
+  const wide = scene.add.image(640, 360, "art_background_wide").setDepth(-1000);
+  const cover = (image: Phaser.GameObjects.Image, width: number, height: number) => {
+    const scale = Math.max(width / image.width, height / image.height);
+    image.setDisplaySize(image.width * scale, image.height * scale);
+  };
+  const sync = () => {
+    const camera = scene.cameras.main;
+    const width = camera.width || 1280;
+    const height = camera.height || 720;
+    const useWide = width / height > 1280 / 720 + .005;
+    normal.setVisible(!useWide);
+    wide.setVisible(useWide);
+    cover(useWide ? wide : normal, width, height);
+  };
+  sync();
+  scene.events.on("widearenaresize", sync);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.events.off("widearenaresize", sync));
+  return normal;
 }
 
 type PaperBounds = { x: number; y: number; w: number; h: number };

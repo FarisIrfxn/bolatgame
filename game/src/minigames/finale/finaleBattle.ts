@@ -214,7 +214,7 @@ export class FinaleBattle extends Phaser.Scene {
     let shown = 0;
     while (shown < msg.length) {
       if (this.forced) return;
-      if (input.pressed("a") || this.clicked) {
+      if (input.consumePressed("a") || this.clicked) {
         this.clicked = false;
         shown = msg.length;
       } else shown++;
@@ -225,7 +225,7 @@ export class FinaleBattle extends Phaser.Scene {
     const arrow = this.add.text(W - 32, 670, `${input.label("a")} · Teruskan ▸`, { fontFamily: "Nunito, sans-serif", fontSize: "14px", color: "#f8d878" }).setOrigin(1, 0);
     this.tweens.add({ targets: arrow, alpha: 0.5, yoyo: true, repeat: -1, duration: 650 });
     this.clicked = false;
-    while (!(input.pressed("a") || this.clicked) && !this.forced) {
+    while (!(input.consumePressed("a") || this.clicked) && !this.forced) {
       arrow.setText(`${input.label("a")} · Teruskan ▸`);
       await this.nextFrame();
     }
@@ -237,7 +237,8 @@ export class FinaleBattle extends Phaser.Scene {
   private async choose(options: { label: string; sub: string; glow?: boolean }[]) {
     // The A press that finishes the preceding line must not also pick a move.
     do { await this.nextFrame(); } while (input.down("a") && !this.forced);
-    this.text.setText(options.length > 1 ? "Qish nak guna\nmove mana?" : "");
+    this.text.setText("");
+    this.text.setVisible(false);
     const c = this.add.container(0, 0);
     const cols = options.length > 1 ? 2 : 1;
     const bw = options.length > 1 ? 375 : 520;
@@ -254,21 +255,24 @@ export class FinaleBattle extends Phaser.Scene {
     });
     let sel = 0;
     let picked = -1;
-    const touchMenu = el("div", `finale-touch-menu${options.length === 1 ? " single" : ""}`);
+    const touchMenu = el("div", `finale-choice-menu${options.length === 1 ? " single" : ""}`,
+      `<div class="finale-choice-heading">${options.length > 1 ? "Qish nak guna move mana?" : "Pilih aksi"}</div><div class="finale-choice-grid"></div>`);
+    const choiceGrid = touchMenu.querySelector<HTMLElement>(".finale-choice-grid")!;
     options.forEach((option, i) => {
       const button = el("button", "", `<strong>${option.label}</strong><small>${option.sub}</small>`);
       button.type = "button";
       button.addEventListener("click", event => { event.stopPropagation(); picked = i; });
-      touchMenu.appendChild(button);
+      choiceGrid.appendChild(button);
     });
     this.game.canvas.parentElement!.appendChild(touchMenu);
     const removeTouchMenu = () => touchMenu.remove();
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, removeTouchMenu);
     const syncTouch = () => {
-      const touch = input.lastDevice === "touch";
-      touchMenu.hidden = !touch;
-      c.setVisible(!touch);
-      this.text.setVisible(!touch);
+      touchMenu.hidden = false;
+      c.setVisible(false);
+      touchMenu.querySelectorAll<HTMLButtonElement>("button").forEach((button, i) => {
+        button.classList.toggle("selected", i === sel);
+      });
     };
     syncTouch();
     items.forEach((b, i) => {
@@ -294,7 +298,7 @@ export class FinaleBattle extends Phaser.Scene {
         sfx.blip();
       }
       last = { x: dx, y: dy };
-      if (input.pressed("a")) picked = sel;
+      if (input.consumePressed("a")) picked = sel;
       await this.nextFrame();
     }
     sfx.select();

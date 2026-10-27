@@ -49,7 +49,7 @@ export class PlaceholderScene extends Phaser.Scene {
   }
 
   update() {
-    if (this.done || !input.pressed("a")) return;
+    if (this.done || !input.consumePressed("a")) return;
     this.taps++;
     sfx.stomp();
     this.counter.setText(Array.from({ length: 3 }, (_, i) => (i < this.taps ? "●" : "○")).join(" "));

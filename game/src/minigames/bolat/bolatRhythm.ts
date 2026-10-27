@@ -270,7 +270,7 @@ export class BolatRhythm extends Phaser.Scene {
       }
     }
 
-    if (input.pressed("a") && this.cooldown <= 0) {
+    if (input.consumePressed("a") && this.cooldown <= 0) {
       let best: Note | null = null;
       for (const n of this.notes) {
         if (n.state !== "live" || n.kind !== this.lane) continue;

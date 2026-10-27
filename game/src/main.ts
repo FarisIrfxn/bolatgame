@@ -313,8 +313,13 @@ async function toZone(id: ZoneId, spawn: string) {
   clearScene(true);
   diagnostic("zone loading", { zone: id, spawn });
   music.play("overworld");
-  const loading = el("div", "city-loading");
-  loading.textContent = `Sediakan ${ZONES[id].name}…`;
+  const loading = el("div", "city-loading dream",
+    `<div class="dream-sky" aria-hidden="true"></div><div class="dream-haze" aria-hidden="true"></div>
+     <div class="city-loading-content">
+       <img class="city-loading-dance" src="/assets/ui/city-loading-dance.png" alt="Bolat dan Bowat menari">
+       <h2>Sediakan ${ZONES[id].name}…</h2>
+       <div class="city-loading-track" aria-hidden="true"><span></span></div>
+     </div>`);
   loading.setAttribute("role", "status");
   document.getElementById("game-viewport")!.appendChild(loading);
   try {

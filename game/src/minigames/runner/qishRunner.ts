@@ -40,13 +40,14 @@ export function createQishRunner(host: HTMLElement, ctx: MinigameCtx): CustomMin
   let scale = 1, left = 0, top = 0, span = W;
   let road: ReturnType<typeof runnerRoad>;
   const resize = () => {
-    // The viewport model is updated before this event. Container-query layout
-    // can still report the previous frame's host dimensions during a rotation.
-    const w = gameViewport.width, h = gameViewport.height;
+    const bounds = host.getBoundingClientRect();
+    const ratio = bounds.width > 0 && bounds.height > 0 ? bounds.width / bounds.height : gameViewport.width / gameViewport.height;
     // Fill landscape while preserving proportions: wide screens reveal scenery,
     // narrower landscape screens crop only the outer edges. Keep the existing
     // centered 16:9 playfield in portrait.
-    const fullBleed = w / h >= 1.4;
+    const fullBleed = ratio >= 1.4;
+    const w = fullBleed ? H * ratio : gameViewport.width;
+    const h = fullBleed ? H : gameViewport.height;
     scale = fullBleed ? h / H : Math.min(w / W, h / H);
     left = (w - W * scale) / 2; top = (h - H * scale) / 2;
     span = fullBleed ? w / scale : W;

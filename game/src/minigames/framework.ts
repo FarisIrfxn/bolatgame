@@ -102,13 +102,18 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
   host.classList.add("storybook-host");
   await prepareMinigame(def);
   host.dataset.boss = def.id;
-  const syncBackdrop = () => {
+  const applyBackdrop = () => {
     const ratio = gameViewport.width / gameViewport.height;
-    const exact = Math.abs(ratio - 1280 / 720) <= .005;
     const art = ratio > 1280 / 720 + .005 ? `/assets/mobile/bg_${def.id}.webp` : `/assets/storybook/bg_${def.id}.webp`;
-    // The 16:9 scene art is used once inside the canvas at its native ratio.
-    // Other aspect ratios get a full-bleed cover behind the transparent canvas.
-    host.style.background = exact ? "#f4dbe5" : `#f4dbe5 url("${art}") center / cover no-repeat`;
+    // Keep illustrated art behind the transparent Phaser canvas at every ratio.
+    // This also covers sub-pixel gaps while mobile browsers settle after resize.
+    host.style.background = `#f4dbe5 url("${art}") center / cover no-repeat`;
+  };
+  let backdropFrame = 0;
+  const syncBackdrop = () => {
+    applyBackdrop();
+    cancelAnimationFrame(backdropFrame);
+    backdropFrame = requestAnimationFrame(() => { if (host.isConnected) applyBackdrop(); });
   };
   syncBackdrop();
   window.addEventListener("gameviewportresize", syncBackdrop);
@@ -129,6 +134,7 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
       stopSkip?.();
       skipHint?.remove();
       window.removeEventListener("gameviewportresize", syncBackdrop);
+      cancelAnimationFrame(backdropFrame);
       resolve(r);
     };
     const ctx: MinigameCtx = {
@@ -203,9 +209,10 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
         // screens show extra sides; 16:10 laptop screens show extra sky/ground.
         // World bounds and gameplay coordinates remain in the original 1280×720 area.
         const fit = () => {
-          const ratio = gameViewport.width / gameViewport.height;
+          const bounds = host.getBoundingClientRect();
+          const ratio = bounds.width > 0 && bounds.height > 0 ? bounds.width / bounds.height : gameViewport.width / gameViewport.height;
           const fillLandscape = ratio >= 1.4;
-          const width = fillLandscape && ratio > 1280 / 720 + .005 ? gameViewport.width : 1280;
+          const width = fillLandscape && ratio > 1280 / 720 + .005 ? Math.round(720 * ratio) : 1280;
           const height = fillLandscape && ratio < 1280 / 720 - .005 ? 1280 / ratio : 720;
           const padX = (width - 1280) / 2;
           const padY = (height - 720) / 2;

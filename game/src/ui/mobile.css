@@ -38,29 +38,32 @@
 /* Backgrounds are full width; the arena always retains its original 16:9 frame. */
 .storybook-host { overflow: hidden; }
 .storybook-host > canvas { touch-action: none; }
-body:has(.storybook-host[data-boss="bolatex"], .finale-touch-menu:not([hidden])) #touch-ui > .touch { display: none; }
+body:has(.storybook-host[data-boss="bolatex"], .finale-choice-menu:not([hidden])) #touch-ui > .touch { display: none; }
 /* These two games have direct card/move taps. Keep B available if assist is offered. */
 body[data-input-device="touch"]:has(.storybook-host[data-boss="bolatex"] .mg-skip) #touch-ui > .touch { display: block; }
 body:has(.storybook-host[data-boss="bolatex"]) #touch-ui :is(.stick,.btn-a) { display: none; }
-.finale-touch-menu {
+.finale-choice-menu {
   position: absolute; z-index: 4; left: 50%; translate: -50% 0;
   bottom: calc(20px + var(--game-safe-bottom));
   width: min(1280px, calc(100% - var(--game-safe-left) - var(--game-safe-right) - 40px));
-  display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; padding: 12px;
+  display: grid; gap: 8px; padding: 12px;
   background: #fff7e8; border: 2px solid #c18aa3; border-radius: 18px;
   box-shadow: 0 4px 0 #9f647e;
 }
-.finale-touch-menu.single { grid-template-columns: 1fr; width: min(520px,calc(100% - 40px)); }
-#game-viewport[data-layout="portrait"] .finale-touch-menu:not(.single) { grid-template-columns: repeat(2,minmax(0,1fr)); }
-.finale-touch-menu button {
+.finale-choice-heading { color:#754459; font:400 max(17px,calc(12px / var(--game-scale)))/1.15 var(--font-title); text-align:center; }
+.finale-choice-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+.finale-choice-menu.single { width: min(520px,calc(100% - 40px)); }
+.finale-choice-menu.single .finale-choice-grid { grid-template-columns:1fr; }
+#game-viewport[data-layout="portrait"] .finale-choice-menu:not(.single) .finale-choice-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.finale-choice-menu button {
   display: grid; align-content: center; gap: 5px;
   min-height: calc(44px / var(--game-scale)); padding: 8px 15px;
   border: 1px solid #c58fa6; border-radius: 10px; background: linear-gradient(#ffe1ec,#f3c8d9);
   color: #754459; text-align: left; cursor: pointer;
 }
-.finale-touch-menu strong { font: 400 max(18px,calc(12px / var(--game-scale)))/1.1 var(--font-title); }
-.finale-touch-menu small { font: 800 max(13px,calc(10px / var(--game-scale)))/1.1 var(--font-body); }
-.finale-touch-menu button:active { background: #ebafc8; }
+.finale-choice-menu strong { font: 400 max(18px,calc(12px / var(--game-scale)))/1.1 var(--font-title); }
+.finale-choice-menu small { font: 800 max(13px,calc(10px / var(--game-scale)))/1.1 var(--font-body); }
+.finale-choice-menu button:active,.finale-choice-menu button.selected { background: linear-gradient(#f5c3d8,#eaa5c4); outline:2px solid #a7557e; outline-offset:1px; }
 
 @media (max-height: 500px) and (orientation: landscape) {
   #touch-ui .stick { left: calc(18px + env(safe-area-inset-left)); bottom: calc(18px + env(safe-area-inset-bottom)); }
