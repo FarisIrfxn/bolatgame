@@ -400,12 +400,6 @@ export const ZONE_TALK: Record<string, Line[]> = {
     { who: "qish", text: "Fuh. Jalan sikit pun dah penat. Confirm saya dah 80kg.", expression: "sleepy" },
     { who: "narrator", text: "(Awak kuyush.)" },
   ],
-  "sunway:view": [
-    { who: "sign", text: "📸 SPOT GAMBAR" },
-    { who: "qish", text: "Dari sini nampak semua: scramble, skrin gergasi, KLCC, Menara KL, Merdeka 118.", expression: "happy" },
-    { who: "qish", text: "Kalau Faris ada, mesti dia ambil gambar saya dengan sudut paling tak flattering.", expression: "smug" },
-    { who: "narrator", text: "(Kalau tak kira bau kentut, view ni memang 10/10.)" },
-  ],
   "sunway:kedai24": [
     { who: "kakkedai", text: "Pewangi dah habis, dik. Satu KL datang beli hari ni." },
     { who: "kakkedai", text: "Tapi ada aiskrim. Nak?" },

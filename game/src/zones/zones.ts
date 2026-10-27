@@ -158,7 +158,6 @@ import {
   monorail,
   motoZone,
   musicNotes,
-  photoSpot,
   pianoWalk,
   planterTree,
   recordCrates,
@@ -628,30 +627,21 @@ export const ZONES: Record<ZoneId, ZoneDef> = {
   //   top: the screen tower (curved corner screen, a screen each face)
   //   left: MRT from Labu Lanjut, kedai 24 jam, shawarma, mamak, urut; monorail station overhead
   //   right: MRT to Lorbel, Piring Hitam, kedai gitar, a family sleeping rough, ZON MOTOSIKAL, burger, Myvi
-  //   bottom: BUKIT BINTANG letters, the photo spot (low camera: scramble, screens, skyline), piano, buskers
+  //   bottom: BUKIT BINTANG letters, street piano and buskers
   sunway: zone({
     id: "sunway",
     name: "Bukit Bintang",
     sky: 0xa9c3e4,
     fog: 0xc8d4e6,
     light: { sun: 2.1, hemi: 1.15, sunColor: 0xffd2a0, hemiSky: 0xe8f0ff, hemiGround: 0x8a8278 },
-    bounds: [-34, -26, 38.5, 28.6],
-    cam: [-30, -24, 35, 28.6],
+    bounds: [-34, -26, 38.5, 26.5],
+    cam: [-30, -24, 35, 20],
     spawns: {
       start: [-17.5, 5.6, "front"],
       west: [-17.5, 5.6, "front"],
       east: [17.5, 5.6, "front"],
       myvi: [35.2, 20.5, "right"],
       boss: [2.8, 2.8, "left"],
-    },
-    // A little lower than usual everywhere, so the screens read; on the photo spot, a low camera looking
-    // across the letters and the scramble at the screen tower with the KL skyline either side.
-    scenic: {
-      weight: (x, z) => Math.max(0.3, THREE.MathUtils.clamp((3 - Math.hypot(x, z - 20.6)) / 1.6, 0, 1)),
-      offset: [0, 3.4, 11],
-      lookY: 2.5,
-      lookAhead: 25,
-      fog: [65, 170],
     },
     async build(b) {
       const box = (x0: number, z0: number, x1: number, z1: number) => b.collider([x0, z0, x1, z1]);
@@ -693,7 +683,8 @@ export const ZONES: Record<ZoneId, ZoneDef> = {
       b.root.add(skyline());
 
       // ---- Top: the screen tower
-      anim(screenTower(W(-11.5, -11.5), screens));
+      const tower = screenTower(W(-11.5, -11.5), screens);
+      anim(tower);
       b.region((x, z) => {
         const [u, v] = UV(x, z);
         return u < -11.1 && v < -11.1;
@@ -825,19 +816,17 @@ export const ZONES: Record<ZoneId, ZoneDef> = {
       add(planterTree(32.5, -9.5, 7));
       post(32.5, -9.5, 1.0);
 
-      // ---- Bottom: the letters, the photo spot, the street piano, buskers
-      add(photoSpot(0, 20.6));
-      b.interact("view", 0, 20.6, "Tengok", 2.4, 1.0);
-      anim(pianoWalk(-6, 25.4, 13, 0.92, 2.1, b.player));
-      add(signBoard(7.4, 26.4, "Piano Jalanan ♪"));
-      post(7.4, 26.4, 0.2);
-      b.interact("piano", 7.4, 27.2, "Tengok", 2.2, 1.0);
-      add(buskerSpot(-7.5, 22.6));
-      box(-9.3, 22.0, -8.6, 22.6);
-      b.interact("busker", -7.5, 24.4, "Tengok", 2.6, 1.6);
-      anim(musicNotes(-7.5, 2.4, 22.4, () => !cloudLeft(5), 5));
-      add(planterTree(11.5, 27, 11));
-      post(11.5, 27, 1.0);
+      // ---- Bottom: bring the piano and performers closer to the junction.
+      anim(pianoWalk(-6, 22.0, 13, 0.92, 2.1, b.player));
+      add(signBoard(7.4, 23.0, "Piano Jalanan ♪"));
+      post(7.4, 23.0, 0.2);
+      b.interact("piano", 7.4, 23.8, "Tengok", 2.2, 1.0);
+      add(buskerSpot(-7.5, 20.3));
+      box(-9.3, 19.7, -8.6, 20.3);
+      b.interact("busker", -7.5, 22.1, "Tengok", 2.6, 1.6);
+      anim(musicNotes(-7.5, 2.4, 20.1, () => !cloudLeft(5), 5));
+      add(planterTree(11.5, 24.5, 11));
+      post(11.5, 24.5, 1.0);
 
       // ---- Monorail along Jalan Bukit Bintang, and city blocks behind the side blocks
       anim(monorail(b.player));
@@ -907,14 +896,14 @@ export const ZONES: Record<ZoneId, ZoneDef> = {
           { x: -1.8, z: -11.8, look: Wl[3], back: true, cloud: 1 },
           { x: 1.9, z: -11.6, look: Wl[9], back: true, cloud: 1 },
           { x: rf(6, 2.2)[0], z: rf(6, 2.2)[1], look: Wl[5], back: true, cloud: 2 },
-          { x: -9.4, z: 25.4, look: Wl[0], back: true, cloud: 5 },
-          { x: -8.0, z: 25.7, look: Wl[7], back: true, cloud: 5 },
-          { x: -6.6, z: 25.2, look: Wl[4], back: true, cloud: 5 },
+          { x: -9.4, z: 23.1, look: Wl[0], back: true, cloud: 5 },
+          { x: -8.0, z: 23.4, look: Wl[7], back: true, cloud: 5 },
+          { x: -6.6, z: 22.9, look: Wl[4], back: true, cloud: 5 },
           { x: 24.8, z: -0.9, look: Wl[8], cloud: 3 },
         ],
         musicians: [
-          { x: -8.3, z: 22.3, look: { skin: "#c98c64", top: "#2a2730", bottom: "#3d4a7a", hair: "#26222a", cap: "#3b6fe0", bag: "#000" }, kind: "guitar", cloud: 5 },
-          { x: -6.6, z: 22.3, look: { skin: "#ecc0a0", top: "#ff8fb1", bottom: "#2a2730", hijab: "#fffdf6", bag: "#000" }, kind: "mic", cloud: 5 },
+          { x: -8.3, z: 20.0, look: { skin: "#c98c64", top: "#2a2730", bottom: "#3d4a7a", hair: "#26222a", cap: "#3b6fe0", bag: "#000" }, kind: "guitar", cloud: 5 },
+          { x: -6.6, z: 20.0, look: { skin: "#ecc0a0", top: "#ff8fb1", bottom: "#2a2730", hijab: "#fffdf6", bag: "#000" }, kind: "mic", cloud: 5 },
         ],
         player: b.player,
         clouds,
@@ -924,7 +913,12 @@ export const ZONES: Record<ZoneId, ZoneDef> = {
       });
       anim(crowd);
       b.blockers(crowd.solid, 0.3);
-      if (import.meta.env.DEV) Object.assign(window, { __bb: { crowd: crowd.debug, light: cars.light, left: cars.walkLeft } });
+      if (import.meta.env.DEV) Object.assign(window, { __bb: {
+        crowd: crowd.debug, light: cars.light, left: cars.walkLeft,
+        trafficGroup: cars.group, trafficUpdate: cars.update,
+        crowdGroup: crowd.group, crowdUpdate: crowd.update,
+        screenGroup: tower.group, screenUpdate: tower.update,
+      } });
 
       if (!beaten) {
         // Bowat turns round every so often to show off the source of it all: PROT!

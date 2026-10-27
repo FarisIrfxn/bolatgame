@@ -1135,6 +1135,9 @@ const laneOf = (l: Lane, x: number, z: number): [number, number] => {
  * can't walk through them. */
 export function traffic(o: { jam: () => boolean; bowatHere: () => boolean; player: () => THREE.Vector3 }): Anim & { light: () => Light; walkLeft: () => number; solid: () => readonly THREE.Vector3[] } {
   const group = new THREE.Group();
+  const mobile = navigator.maxTouchPoints > 0;
+  const shadowGeo = mobile ? new THREE.BoxGeometry(1, 1, 1) : null;
+  const shadowProxyMat = mobile ? new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false }) : null;
   const r = rng(42);
   const COLORS = [0xf4f1ea, 0x2a2730, 0x9aa0aa, 0x3b6fe0, 0xc8322a, 0x2f8a5a, 0xd9d4c8, 0x6b5a8a];
   type Car = { g: THREE.Group; len: number; lane: Lane; s: number; v: number; hazard: THREE.Mesh[]; respawn: number };
@@ -1148,11 +1151,25 @@ export function traffic(o: { jam: () => boolean; bowatHere: () => boolean; playe
       const kind = lane.group === "ew" && Math.abs(lane.off) > 3 && i === 1 ? 0 : 1 + ((li * 7 + i * 3) % 8);
       const raw = kind === 0 ? bus() : kind < 3 ? cab() : car(COLORS[(li * 5 + i) % COLORS.length], kind % 2 === 0);
       const m = { g: mergeStatic(raw.g), len: raw.len };
-      m.g.traverse((o) => (o.castShadow = (o as THREE.Mesh).isMesh));
+      m.g.traverse((obj) => (obj.castShadow = !mobile && (obj as THREE.Mesh).isMesh));
       group.add(m.g);
       cars.push({ g: m.g, len: m.len, lane, s: 0, v: 0, hazard: [], respawn: 0 });
     }
   });
+  // Keep all painted vehicle geometry in the colour pass. One instanced box
+  // casts their mobile shadows, replacing 24 detailed GLB shadow draws.
+  const vehicleShadows = mobile ? new THREE.InstancedMesh(shadowGeo!, shadowProxyMat!, cars.length) : null;
+  if (vehicleShadows) {
+    vehicleShadows.castShadow = true;
+    vehicleShadows.frustumCulled = false;
+    vehicleShadows.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    group.add(vehicleShadows);
+  }
+  const shadowMatrix = new THREE.Matrix4();
+  const shadowPosition = new THREE.Vector3();
+  const shadowScale = new THREE.Vector3();
+  const shadowRotation = new THREE.Quaternion();
+  const yAxis = new THREE.Vector3(0, 1, 0);
   // Jam positions: half of each lane queued up to its stop line, half already through the junction,
   // none on the crossings.
   const jamLayout = () => {
@@ -1286,6 +1303,17 @@ export function traffic(o: { jam: () => boolean; bowatHere: () => boolean; playe
         c.g.position.set(x, 0, z);
         c.g.rotation.y = lane.rot;
       });
+    }
+    if (vehicleShadows) {
+      cars.forEach((c, i) => {
+        const bus = c.len > 6;
+        const h = bus ? 2.7 : 1.5;
+        shadowPosition.set(c.g.position.x, h / 2 + 0.2, c.g.position.z);
+        shadowScale.set(bus ? 2.3 : 1.9, h, c.len);
+        shadowRotation.setFromAxisAngle(yAxis, c.lane.rot);
+        vehicleShadows.setMatrixAt(i, shadowMatrix.compose(shadowPosition, shadowRotation, shadowScale));
+      });
+      vehicleShadows.instanceMatrix.needsUpdate = true;
     }
     cars.forEach((c, i) => {
       const [x, z] = laneAt(c.lane, c.s - c.len / 4);
@@ -1686,7 +1714,6 @@ export function recordCrates(x: number, z: number, n = 3) {
   g.position.set(x, 0, z);
   return shadowed(g);
 }
-
 /** The busker's corner: a little amp, a mic stand, an open guitar case with coins, a chalk sign. */
 export function buskerSpot(x: number, z: number) {
   const g = new THREE.Group();
@@ -1905,6 +1932,7 @@ export interface Musician {
 type Agent = {
   g: THREE.Group;
   frames: { group: THREE.Group; pivot: THREE.Group }[];
+  shown: number;
   kind: "cross" | "walk";
   pos: THREE.Vector3;
   path: [number, number][];
@@ -1970,14 +1998,14 @@ export async function bintangCrowd(o: {
     const corner = i % 4;
     const [cx, cz] = CORNERS[corner];
     const pos = new THREE.Vector3(cx + (r() - 0.5) * 2.6, 0, cz + (r() - 0.5) * 2.6);
-    agents.push({ g, frames, kind: "cross", pos, path: [], s: 0, dir: 1, speed: 2.0 + r() * 0.5, stride: r() * 6, state: "wait", corner, wait: r() * 1.4, panic: false, decide: r(), turnCool: 0, side: 0, dx: 0, dz: 1, idx: i });
+    agents.push({ g, frames, shown: -1, kind: "cross", pos, path: [], s: 0, dir: 1, speed: 2.0 + r() * 0.5, stride: r() * 6, state: "wait", corner, wait: r() * 1.4, panic: false, decide: r(), turnCool: 0, side: 0, dx: 0, dz: 1, idx: i });
   }
   for (let i = 0; i < o.walkRoutes.length; i++) {
     const { g, frames } = await make((i * 3 + 1) % o.looks.length);
     const path = o.walkRoutes[i];
     let total = 0;
     for (let k = 1; k < path.length; k++) total += Math.hypot(path[k][0] - path[k - 1][0], path[k][1] - path[k - 1][1]);
-    agents.push({ g, frames, kind: "walk", pos: new THREE.Vector3(path[0][0], 0, path[0][1]), path, s: r() * total, dir: r() < 0.5 ? 1 : -1, speed: 1.4 + r() * 0.5, stride: r() * 6, state: "go", corner: 0, wait: 0, panic: false, decide: r(), turnCool: 0, side: 0, dx: 0, dz: 1, idx: o.crossers + i });
+    agents.push({ g, frames, shown: -1, kind: "walk", pos: new THREE.Vector3(path[0][0], 0, path[0][1]), path, s: r() * total, dir: r() < 0.5 ? 1 : -1, speed: 1.4 + r() * 0.5, stride: r() * 6, state: "go", corner: 0, wait: 0, panic: false, decide: r(), turnCool: 0, side: 0, dx: 0, dz: 1, idx: o.crossers + i });
   }
 
   // Standers and musicians: still paper figures that only show up once their spot is clear.
@@ -2097,9 +2125,15 @@ export async function bintangCrowd(o: {
   const v = new THREE.Vector3();
   let lastLight: Light = o.light();
   let nextBark = 2;
+  const mobileCrowd = navigator.maxTouchPoints > 0;
+  let lastCrowdFrame = 0;
   // Only calm people block Qish; anyone running about in a panic just dodges past.
   const solid: THREE.Vector3[] = [];
   const update = (t: number) => {
+    // NPCs only switch between two walk drawings; 30 updates/s is enough for
+    // their motion and leaves the 60 Hz budget for Qish and the traffic.
+    if (mobileCrowd && t - lastCrowdFrame < 1 / 30 - 0.004) return;
+    lastCrowdFrame = t;
     const dt = tick(t);
     clock = t;
     const pl = o.player();
@@ -2227,12 +2261,15 @@ export async function bintangCrowd(o: {
       const away = moving ? a.dz < -0.3 : a.kind === "cross" && a.state === "wait" ? a.pos.z > 3 : false;
       const k = (a.panic ? 4 : 0) + (away ? 2 : 0) + frame;
       const mirror = a.dx < -0.15 ? -1 : 1;
-      a.frames.forEach((f, i) => {
-        f.group.visible = i === k;
-        f.pivot.scale.x = mirror;
-        f.group.position.y = moving ? Math.abs(Math.sin(a.stride)) * (a.panic ? 0.14 : 0.05) : 0;
-        f.pivot.rotation.z = moving ? Math.sin(a.stride) * (a.panic ? 0.09 : 0.035) : Math.sin(t * 1.3 + a.idx) * 0.015;
-      });
+      if (a.shown !== k) {
+        if (a.shown >= 0) a.frames[a.shown].group.visible = false;
+        a.frames[k].group.visible = true;
+        a.shown = k;
+      }
+      const shown = a.frames[k];
+      shown.pivot.scale.x = mirror;
+      shown.group.position.y = moving ? Math.abs(Math.sin(a.stride)) * (a.panic ? 0.14 : 0.05) : 0;
+      shown.pivot.rotation.z = moving ? Math.sin(a.stride) * (a.panic ? 0.09 : 0.035) : Math.sin(t * 1.3 + a.idx) * 0.015;
     }
     solid.length = 0;
     for (const a of agents) if (!a.panic) solid.push(a.pos);
@@ -2354,24 +2391,4 @@ export function subwayEntrance(x: number, z: number, dest: string, color: string
   g.add(mesh(roundedBox(0.5, 2.6, 0.5), [steel, steel, steel, steel, glow(totem), steel], 2.1, 1.3, 1.3));
   g.position.set(x, 0, z);
   return shadowed(g);
-}
-
-/** A cardboard-looking ring on the paving with a camera in it: the photo spot. */
-export function photoSpot(x: number, z: number) {
-  const tex = canvasTexture(256, 256, (c) => {
-    c.strokeStyle = "#ff5c93";
-    c.lineWidth = 14;
-    c.setLineDash([26, 16]);
-    c.beginPath();
-    c.arc(128, 128, 110, 0, Math.PI * 2);
-    c.stroke();
-    c.font = "bold 90px sans-serif";
-    c.textAlign = "center";
-    c.textBaseline = "middle";
-    c.fillText("📸", 128, 112);
-    c.fillStyle = "#ff5c93";
-    c.font = "bold 30px 'Bagel Fat One', sans-serif";
-    c.fillText("SPOT GAMBAR", 128, 196);
-  });
-  return decal(3.2, 3.2, new THREE.MeshLambertMaterial({ map: tex, transparent: true }), x, z, 0, 0.05);
 }

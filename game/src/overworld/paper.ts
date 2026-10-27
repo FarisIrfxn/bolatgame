@@ -38,6 +38,24 @@ const IDLE: Record<string, { chance: number; routines: IdleStep[][]; faces?: str
 
 const cache = new Map<string, Promise<{ tex: THREE.Texture; aspect: number; px: number }>>();
 
+/** Keep the player and Bowat's poses; release town-specific crowd canvases when
+ * leaving a city. Those data-URL doodles can otherwise accumulate across all maps. */
+export async function releaseZonePaperTextures() {
+  const releases: Promise<void>[] = [];
+  for (const [url, pending] of cache) {
+    if (url.startsWith("/assets/chars/qish_") || url.startsWith("/assets/chars/bowat_")) continue;
+    cache.delete(url);
+    releases.push(pending.then(({ tex }) => {
+      tex.dispose();
+      if (tex.image instanceof HTMLCanvasElement) {
+        tex.image.width = 0;
+        tex.image.height = 0;
+      }
+    }).catch(() => {}));
+  }
+  await Promise.all(releases);
+}
+
 /** Load an image and bake a white paper border around its silhouette. */
 export function paperTexture(url: string, border = 9) {
   if (!cache.has(url)) {
@@ -73,7 +91,7 @@ export function paperTexture(url: string, border = 9) {
           const tex = new THREE.CanvasTexture(c);
           tex.colorSpace = THREE.SRGBColorSpace;
           tex.anisotropy = 4;
-          // Cached across zones; zone teardown must not dispose it.
+          // Shared within the current city; the world releases non-player art on travel.
           tex.userData.shared = true;
           resolve({ tex, aspect: c.width / c.height, px: img.height });
         };

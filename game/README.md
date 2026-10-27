@@ -53,6 +53,18 @@ Senarai dependency ialah `ZONE_MODELS` dalam `src/overworld/models.ts`; tambah m
 ke senarai bandar yang memakainya. Uji semua keadaan cerita/cache/retry dengan
 `node pipeline/audit/zone-models.mjs` dari root (dev 5181; `GAME_URL`/`PW_CORE` pilihan).
 
+Pada touch, boss Phaser memakai Canvas 2D supaya peralihan dari bandar 3D tidak
+membuka WebGL context kedua. Setiap boss hanya memuat sprite dan item yang dipakai
+olehnya (`src/minigames/storybook.ts`). Doodle NPC bandar lama dilepaskan apabila
+bertukar bandar; sprite Qish/Bowat kekal.
+
+Untuk masalah pada phone, buka game dengan `?diag=1`. Butang **Log** tersedia dari
+awal download dan memaparkan log tempatan yang kekal selepas refresh: peringkat load bandar/boss, FPS dunia setiap
+5 saat, bilangan sumber GPU, tekstur yang tertutup, kehilangan WebGL dan ralat JS.
+Tekan **Log → Salin log** dan hantar kandungannya. Log disimpan dalam localStorage pada
+peranti itu sahaja. Audit Chromium touch:
+`node pipeline/audit/mobile-stability.mjs`, `bb-load.mjs`, `zone-memory.mjs`.
+
 Senarai/saiz/revisi aset dijana terus daripada `public/assets/` oleh plugin Vite dalam
 `vite.config.ts`, jadi aset eksport mesti committed. `src/boot.ts` ialah entry HTML;
 ia memuat `main.ts` selepas download. `public/asset-cache.js` menyajikan aset daripada

@@ -14,6 +14,7 @@ import { save } from "./core/save";
 import { sfx } from "./core/sfx";
 import { music } from "./core/music";
 import { BOSSES, bossOfZone, type BossId } from "./content/bosses";
+import { diagnostic } from "./core/diagnostics";
 import {
   ALL_CLUES,
   BABAH,
@@ -310,6 +311,7 @@ function clearScene(keepMusic = false) {
 
 async function toZone(id: ZoneId, spawn: string) {
   clearScene(true);
+  diagnostic("zone loading", { zone: id, spawn });
   music.play("overworld");
   const loading = el("div", "city-loading");
   loading.textContent = `Sediakan ${ZONES[id].name}…`;
@@ -320,6 +322,7 @@ async function toZone(id: ZoneId, spawn: string) {
     await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
     await overworld.loadZone(ZONES[id], spawn);
     await overworld.mount();
+    diagnostic("zone ready", { zone: id, models: overworld.modelState() });
     showHud(ZONES[id].name + (id === "bilik" ? bedroomProgress() : ""));
     refreshCollect(id);
     save.data.zone = id;
@@ -597,10 +600,13 @@ async function playBoss(boss: BossId, rematch?: { zone: ZoneId; spawn: string })
   const info = BOSSES[boss];
   const talk = BOSS_TALK[boss];
   overworld.lock();
+  diagnostic("boss preparing", { boss, zone: overworld.currentZone });
   await prepareMinigame(MINIGAMES[boss]);
+  diagnostic("boss assets ready", { boss });
   let bossResult!: Promise<"win" | "skip">;
   await fadeThrough(async () => {
     clearScene();
+    diagnostic("boss world unmounted", { boss });
     minigameHost = el("div");
     minigameHost.style.cssText = "position:absolute;inset:0;background:#0d1230";
     minigameHost.appendChild(el("div", "rotate-hint", "Pusingkan phone 🔄 untuk skrin besar"));

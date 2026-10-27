@@ -3,9 +3,10 @@ import { input } from "../core/input";
 import { gameViewport } from "../core/viewport";
 import { onFrame } from "../core/loop";
 import { save } from "../core/save";
+import { diagnostic } from "../core/diagnostics";
 import { dialogOpen } from "../ui/dialog";
 import { el, stage, ui } from "../ui/dom";
-import { PaperSprite, paperStandee, type Facing } from "./paper";
+import { PaperSprite, paperStandee, releaseZonePaperTextures, type Facing } from "./paper";
 import { prepareZoneModels, modelCacheState } from "./models";
 import { preloadTextures } from "./textures";
 import { makeComposer } from "./post";
@@ -88,8 +89,6 @@ export class Overworld {
 
   private trail: THREE.Vector3[] = [];
   private camTarget = new THREE.Vector3();
-  /** How far the scenic camera is blended in (eased towards the zone's weight). */
-  private scenicK = 0;
   private camOffset = new THREE.Vector3();
   private bubble = el("div", "prompt-bubble");
   private webglWarning = el("div", "webgl-warning", "<strong>Paparan 3D terhenti sekejap.</strong><span>Safari sedang pulihkan grafik. Tunggu sekejap atau refresh; progress awak dah disimpan.</span>");
@@ -100,6 +99,8 @@ export class Overworld {
   private sceneLock = false;
   private ready: Promise<void>;
   private zoneTask: Promise<void> = Promise.resolve();
+  private sampleAt = performance.now();
+  private sampleFrames = 0;
 
   constructor(private hooks: OverworldHooks) {
     this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
@@ -116,15 +117,21 @@ export class Overworld {
       // leaving a black canvas that looks like a broken save.
       event.preventDefault();
       this.webglWarning.hidden = false;
+      diagnostic("world WebGL lost", { zone: this.currentZone });
       console.warn("WebGL context lost; waiting for browser restoration");
     });
     this.renderer.domElement.addEventListener("webglcontextrestored", () => {
       this.renderer.resetState();
       this.webglWarning.hidden = true;
+      diagnostic("world WebGL restored", { zone: this.currentZone });
       console.info("WebGL context restored");
     });
     this.ready = this.init();
-    window.addEventListener("gameviewportresize", () => this.resize());
+    // A phone rotation during a boss must not reallocate full-screen world
+    // targets while the overworld canvas is detached.
+    window.addEventListener("gameviewportresize", () => {
+      if (this.renderer.domElement.isConnected) this.resize();
+    });
   }
 
   private async init() {
@@ -203,6 +210,7 @@ export class Overworld {
   private async buildZone(def: ZoneDef, spawn: string) {
     await this.ready;
     this.disposeZone();
+    await releaseZonePaperTextures();
     await prepareZoneModels(def.id, save.hasCard(8));
     this.zone = def;
     const mood = def.mood?.() ?? {};
@@ -273,7 +281,9 @@ export class Overworld {
       const m = o as THREE.Mesh;
       if (m.geometry && !m.geometry.userData.shared) geometries.add(m.geometry);
       if ((o as THREE.InstancedMesh).isInstancedMesh) (o as THREE.InstancedMesh).dispose();
-      const mats = m.material ? (Array.isArray(m.material) ? m.material : [m.material]) : [];
+      const mats = m.material ? (Array.isArray(m.material) ? [...m.material] : [m.material]) : [];
+      if (m.customDepthMaterial) mats.push(m.customDepthMaterial);
+      if (m.customDistanceMaterial) mats.push(m.customDistanceMaterial);
       for (const mat of mats) {
         if (mat.userData.shared) continue;
         materials.add(mat);
@@ -355,6 +365,8 @@ export class Overworld {
     this.busy = false;
     this.sceneLock = false;
     this.resize();
+    this.sampleAt = performance.now();
+    this.sampleFrames = 0;
     this.stopLoop = onFrame((dt, t) => this.update(dt, t));
   }
 
@@ -375,6 +387,12 @@ export class Overworld {
     this.renderer.domElement.remove();
     this.bubble.remove();
     this.webglWarning.hidden = true;
+    if (TOUCH_DEVICE) {
+      // Release full-screen post targets while a boss or the next city loads.
+      // mount() resizes them before the next world frame.
+      this.renderer.setSize(1, 1, false);
+      this.post.resize(1, 1);
+    }
   }
 
   /** Turn Qish without moving her (posing for a picture). */
@@ -394,7 +412,6 @@ export class Overworld {
     this.player.face(facing);
     this.trail = [];
     this.camTarget.copy(this.player.group.position);
-    this.scenicK = this.zone?.scenic?.weight(x, z) ?? 0;
     // Bowat is away again after the island (he's at the party) until the ending.
     const joined = save.flag("bowatJoined") && !save.flag("bowatAway") && (this.zone?.companion?.() ?? true);
     this.bowat.group.visible = joined;
@@ -499,6 +516,33 @@ export class Overworld {
     this.updateCamera(dt);
     this.updateFade(dt);
     this.post.composer.render(dt);
+    if (TOUCH_DEVICE) {
+      this.sampleFrames++;
+      const elapsed = performance.now() - this.sampleAt;
+      if (elapsed >= 5000) {
+        const closedMaps = new Set<THREE.Texture>();
+        this.zoneRoot.traverse(o => {
+          const m = o as THREE.Mesh;
+          if (!m.material) return;
+          for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
+            for (const key of ["map", "emissiveMap", "alphaMap"] as const) {
+              const texture = (mat as THREE.MeshStandardMaterial)[key];
+              if (texture?.image && "width" in texture.image && texture.image.width === 0) closedMaps.add(texture);
+            }
+          }
+        });
+        diagnostic("world performance", {
+          zone: this.zone.id,
+          fps: Math.round(this.sampleFrames * 1000 / elapsed),
+          gpuTextures: this.renderer.info.memory.textures,
+          gpuGeometries: this.renderer.info.memory.geometries,
+          closedMaps: closedMaps.size,
+          canvas: [this.renderer.domElement.width, this.renderer.domElement.height],
+        });
+        this.sampleAt = performance.now();
+        this.sampleFrames = 0;
+      }
+    }
   }
 
   /** Paddling: the boat eases up to speed and drifts to a stop, bumps off the shore, and turns to
@@ -574,27 +618,15 @@ export class Overworld {
     const tz = THREE.MathUtils.clamp(p.z, c[1], c[3]);
     this.camTarget.x += (tx - this.camTarget.x) * Math.min(1, dt * 4);
     this.camTarget.z += (tz - this.camTarget.z) * Math.min(1, dt * 4);
-    const sc = this.zone!.scenic;
-    const want = sc ? sc.weight(p.x, p.z) : 0;
-    this.scenicK += (want - this.scenicK) * Math.min(1, dt * 2.5);
-    const k = this.scenicK * this.scenicK * (3 - 2 * this.scenicK);
     const po = this.zone!.planet?.camOffset;
     if (po) this.camOffset.set(...po);
     else this.camOffset.copy(CAM_OFFSET).multiplyScalar(this.zone!.camScale ?? 1);
-    if (sc && k > 0.001) this.camOffset.lerp(new THREE.Vector3(...sc.offset), k);
-    if (this.scene.fog instanceof THREE.Fog) {
-      this.scene.fog.near = THREE.MathUtils.lerp(38, sc?.fog?.[0] ?? 38, k);
-      this.scene.fog.far = THREE.MathUtils.lerp(75, sc?.fog?.[1] ?? 75, k);
-    }
     this.camera.position.copy(this.camTarget).add(this.camOffset);
-    this.camera.lookAt(this.camTarget.x, 1 + ((sc?.lookY ?? 1) - 1) * k, this.camTarget.z - (sc?.lookAhead ?? 0) * k);
+    this.camera.lookAt(this.camTarget.x, 1, this.camTarget.z);
     planet.centre(this.camTarget.x, this.camTarget.z);
-    // The BB photo camera looks far down the street. On phones, keeping the
-    // normal shadow area there redraws most of the city into a 1024px map.
-    // Ease the shadow area in with the camera so shadows elsewhere stay intact.
-    const shadowRadius = TOUCH_DEVICE && this.zone!.id === "sunway" ? THREE.MathUtils.lerp(26, 14, k) : 26;
+    const shadowRadius = TOUCH_DEVICE && this.zone!.id === "sunway" ? 18 : 26;
     const shadowCamera = this.sun.shadow.camera;
-    if (Math.abs(shadowCamera.right - shadowRadius) > 0.01) {
+    if (shadowCamera.right !== shadowRadius) {
       shadowCamera.left = shadowCamera.bottom = -shadowRadius;
       shadowCamera.right = shadowCamera.top = shadowRadius;
       shadowCamera.updateProjectionMatrix();

@@ -1,6 +1,7 @@
 import "./style.css";
 import "./ui/loading.css";
 import "./core/viewport";
+import { diagnostic } from "./core/diagnostics";
 import { createAssetDownload } from "./core/preload";
 
 const root = document.createElement("div");
@@ -37,6 +38,7 @@ let busy = false;
 async function boot() {
   if (busy) return;
   busy = true;
+  diagnostic("download start");
   retry.hidden = true;
   status.textContent = "Bowat tengah siapkan semuanya untuk awak.";
   root.classList.remove("preparing", "download-error");
@@ -47,15 +49,18 @@ async function boot() {
       bar.setAttribute("aria-valuenow", String(percent));
       size.textContent = `${(loaded / 1_000_000).toFixed(1)} / ${(total / 1_000_000).toFixed(1)} MB · ${percent}%`;
     });
+    diagnostic("download complete");
     status.textContent = "Semua dah dimuat. Sekejap lagi…";
     root.classList.add("preparing");
     // The loading view paints before the large game libraries are parsed. Main
     // prepares shared sprites/textures; GLBs are decoded when entering a zone.
     game ??= await import("./main");
     await game.startGame();
+    diagnostic("game ready");
     window.clearInterval(idle);
     root.remove();
   } catch (error) {
+    diagnostic("startup failed", String(error));
     console.error("Game startup failed", error);
     root.classList.remove("preparing");
     root.classList.add("download-error");

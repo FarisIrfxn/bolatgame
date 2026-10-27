@@ -78,10 +78,6 @@ export interface ZoneDef {
   cam: Box;
   /** Camera distance multiplier (indoor rooms sit closer). */
   camScale?: number;
-  /** A low camera for spots with a view (the KL skyline down the road at Bukit Bintang). `weight`
-   * says how far to blend from the usual top-down camera (0) to this one (1) at Qish's position;
-   * `offset` is from her, and the camera looks `lookAhead` past her at height `lookY`. */
-  scenic?: { weight: (x: number, z: number) => number; offset: [number, number, number]; lookY: number; lookAhead: number; fog?: [number, number] };
   /** Tiny-planet zone (Nyomnyom City): the world is drawn wrapped onto a sphere of this radius under
    * the camera, seen from `camOffset` (default: the usual camera) with a vertical `fov`, over a sky
    * gradient (top to horizon colours) instead of the flat sky colour. */

@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { input } from "../core/input";
+import { diagnostic } from "../core/diagnostics";
 import { onFrame, waitFor } from "../core/loop";
 import { sfx } from "../core/sfx";
 import { music, BOSS_MUSIC, prepareRhythmSong } from "../core/music";
@@ -109,6 +110,7 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
   syncBackdrop();
   window.addEventListener("gameviewportresize", syncBackdrop);
   const intro = await introCard(def, host, onIntroReady);
+  diagnostic("boss intro ready", { boss: def.id });
   if (def.id !== "bolat") music.play(BOSS_MUSIC[def.id]);
   return new Promise((resolve) => {
     let fails = 0;
@@ -150,7 +152,9 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
       return;
     }
     game = new Phaser.Game({
-      type: Phaser.AUTO,
+      // The Three.js world keeps its WebGL context while a boss runs. A second
+      // context is expensive on iOS; these illustrated 2D scenes work in Canvas.
+      type: navigator.maxTouchPoints > 0 ? Phaser.CANVAS : Phaser.AUTO,
       parent: host,
       width: 1280,
       height: 720,
@@ -169,6 +173,9 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
       banner: false,
     });
     const instance = game;
+    instance.canvas.addEventListener("webglcontextlost", () => diagnostic("boss WebGL lost", { boss: def.id }));
+    instance.canvas.addEventListener("webglcontextrestored", () => diagnostic("boss WebGL restored", { boss: def.id }));
+    diagnostic("boss renderer created", { boss: def.id, canvas: [instance.canvas.width, instance.canvas.height] });
     // SceneManager queues additions until READY; getScene would still be null before boot.
     instance.events.once(Phaser.Core.Events.READY, () => {
       if (game !== instance) return;
@@ -214,6 +221,7 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
         instance.events.once(Phaser.Core.Events.POST_RENDER, () => {
           instance.canvas.style.visibility = "visible";
           intro.remove();
+          diagnostic("boss first frame", { boss: def.id });
         });
       });
       instance.scene.start(def.sceneKey!, { ctx, def } satisfies MinigameSceneData);

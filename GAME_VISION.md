@@ -1956,3 +1956,30 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
   Screenshot selepas perubahan masih mengekalkan komposisi dan skrin. Build
   lulus; tiada page error dalam tiga layout. Angka ini daripada GPU desktop,
   bukan bukti crash Safari fizikal sudah selesai. Uji di iPhone sebenar.
+
+### Susulan kestabilan mobile seluruh game (2026-10-27)
+
+- Spot kamera BB, lingkaran foto dan interaksinya dibuang atas permintaan Faris.
+  Piano, busker, pemuzik, penonton, pokok dan collider dipindah ke arah simpang;
+  ruang bawah dipendekkan dan kamera tidak lagi menunjukkan plaza kosong panjang.
+- Audit A/B BB menunjukkan trafik/shadow melukis ratusan ribu segi tiga, manakala
+  kemas kini crowd mengambil masa CPU. Di touch, 24 kenderaan masih dipaparkan
+  penuh tetapi satu InstancedMesh ringkas melukis bayangnya; crowd bergerak pada
+  30 Hz. Desktop kekal dengan bayang dan kadar asal. Skrin animasi kekal hidup.
+- Semua boss Phaser touch kini memakai Canvas 2D supaya WebGL dunia tidak perlu
+  berkongsi bajet GPU dengan WebGL kedua. Loader seni boss hanya memproses sheet
+  dan item yang digunakan; contoh Bolat 6 tekstur `art_` termasuk latar berbanding
+  hampir 40 sebelum ini. Boss custom Qish ex masih laluan tersendiri.
+- Cache kertas NPC khusus bandar dilepaskan ketika keluar; Qish/Bowat dikekalkan.
+  Audit tiga pusingan Labu/BB/Lorbel: tekstur GPU Labu pada pusingan ketiga turun
+  daripada 133 kepada 98 berbanding sebelum pelepasan, tiada imej model tertutup
+  yang masih digunakan. Material depth NPC juga dibersihkan.
+- `?diag=1` membuka log tempatan yang kekal selepas refresh, termasuk peringkat
+  download/peralihan, FPS, kiraan sumber GPU, tekstur tertutup dan WebGL context loss.
+  Audit emulasi touch semua 10 zon/8 boss, potret dan landscape: 20 lawatan zon,
+  16 kemasukan boss, dan Bolat menang lalu pulang ke bandar dalam kedua-dua
+  orientasi tanpa ralat. Audit laluan BB: 54 model, tiada pertindihan, pickup
+  tercapai, exit barat/timur tercapai. Grid 4×4 BB diperiksa; perbandingan kamera
+  di `art/style/bukit_bintang_mobile_before.png` dan `bukit_bintang_mobile_after.png`.
+  Build production lulus. Safari iPhone fizikal, FPS sebenar dan punca tepat model hitam
+  masih perlu disahkan menggunakan log/peranti tersebut; tiada deploy Netlify.

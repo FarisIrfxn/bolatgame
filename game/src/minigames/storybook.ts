@@ -11,11 +11,25 @@ export type IllustratedCharacter = typeof CHARACTERS[number];
 export type IllustratedItem = typeof ITEMS[number];
 export const bossArt = (id: BossId) => id === "blep" ? "/assets/chars/babah_front.png" : `${ART_ROOT}/${id === "finale" ? "faris" : id}_idle.png`;
 
+// Each Phaser scene only needs its own art. Loading every sheet and item for
+// every boss decoded and outlined dozens of unused images on top of the world.
+const SCENE_ART: Record<BossId, { characters: IllustratedCharacter[]; items: IllustratedItem[] }> = {
+  bowat: { characters: ["bowat"], items: ["awning"] },
+  bolat: { characters: ["bolat", "faris"], items: ["heart", "kiss", "cuddle"] },
+  snorlax: { characters: ["snorlax"], items: ["alarm", "meat", "cake", "ramen", "malatang", "cookie"] },
+  blep: { characters: ["blep"], items: ["enemyplane", "playerplane", "cloud"] },
+  megabowat: { characters: ["megabowat"], items: ["pot", "fart"] },
+  bolatex: { characters: ["bolatex"], items: [] },
+  qishex: { characters: [], items: [] },
+  finale: { characters: ["faris", "megaqish"], items: ["fire", "heart"] },
+};
+
 /** Smooth art shares the original hitboxes, input and assist rules. */
 export function preloadStorybook(scene: Phaser.Scene, boss: BossId, aliases: Record<string, string> = {}) {
   scene.load.image("art_background", `${ART_ROOT}/bg_${boss}.webp`);
-  for (const id of CHARACTERS) scene.load.spritesheet(`art_${id}`, `${ART_ROOT}/${id}.png`, { frameWidth: 256, frameHeight: 256 });
-  for (const id of ITEMS) scene.load.image(`art_${id}`, `${ART_ROOT}/item_${id}.png`);
+  const { characters, items } = SCENE_ART[boss];
+  for (const id of characters) scene.load.spritesheet(`art_${id}`, `${ART_ROOT}/${id}.png`, { frameWidth: 256, frameHeight: 256 });
+  for (const id of items) scene.load.image(`art_${id}`, `${ART_ROOT}/item_${id}.png`);
   for (let i = 0; i < 4; i++) scene.load.image(`qish_side_walk_${i}`, `/assets/chars/qish_side_walk_${i}.png`);
   for (const [key, value] of Object.entries(aliases)) {
     const native = key.startsWith("babah_") || key.startsWith("qish_") || (boss === "bowat" && key.startsWith("bowat_"));
@@ -24,7 +38,7 @@ export function preloadStorybook(scene: Phaser.Scene, boss: BossId, aliases: Rec
   // Bake borders before the scene creates images. Each pose/frame is processed separately,
   // with the same frame dimensions and alpha padding, so physics and animation stay aligned.
   scene.load.once(Phaser.Loader.Events.COMPLETE, () => {
-    const sheets = CHARACTERS.map(id=>`art_${id}`);
+    const sheets = characters.map(id=>`art_${id}`);
     const singles = [...Array.from({length:4},(_,i)=>`qish_side_walk_${i}`),
       ...Object.keys(aliases).filter(key=>/^(qish_|bowat_|faris_|crowd\d|busker$|cajon$)/.test(key))];
     for (const key of new Set([...sheets,...singles])) {
