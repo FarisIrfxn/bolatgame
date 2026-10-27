@@ -1893,6 +1893,25 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
   `pipeline/audit/mobile-fullscreen*.mjs`, `docs/UI_QC.md`. Emulasi Chromium sahaja;
   fon fizikal, Safari, FPS, haba dan penggunaan bateri peranti belum diukur.
 
+### Pembaikan fokus Safari: blend dan resource bandar (2026-10-27)
+
+- Canvas blur kini diuji melalui piksel; Chrome mengekalkan filter asal. Browser yang
+  tidak melaksanakannya menggunakan Gaussian RGB sekali semasa membina mask, bukan
+  setiap frame. Ini fallback runtime kecil; mask siap semasa build belum dilaksanakan.
+- Texture painted sumber kekal dalam cache; salinan UV dimiliki bandar. Teardown
+  membersihkan alpha/emissive maps, mask/uniform splat, instancing dan render lists.
+  Texture beam pentas Lorbel yang tersalah ditanda kekal turut dibersihkan.
+- Pertukaran bandar memaparkan `Sediakan [nama bandar]…` sebelum kerja pembinaan;
+  mesej dibuang juga jika pembinaan gagal. Download awal semua aset dikekalkan.
+- Audit `node pipeline/audit/mobile-resources.mjs` (dev server 5181) lulus: 15
+  pembinaan Labu/BB/Lorbel, tiada page error, salinan texture bukan kongsi dari
+  bandar sebelumnya tidak lagi mempunyai alokasi GPU. Ujian mask RGB: RMSE 0.064/255
+  terhadap Chrome; Labu boleh dibina dengan canvas filter dimatikan.
+- Had: cache kongsi/watak masih bertambah semasa audit pendek; ini bukan bukti
+  memory keseluruhan sudah plateau atau crash Safari sudah selesai. Semua 51 GLB
+  masih decode di awal; pemuatan model mengikut bandar dan profiling iPhone kekal
+  susulan. Build TypeScript/Vite lulus; ujian ini Chromium, bukan iPhone fizikal.
+
 ### Susulan wide tiga boss (2026-10-27)
 
 - Hujan/langit finale, periuk Mega Bowat dan sprite di tepi Bowat masih terpotong
@@ -1901,3 +1920,24 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
 - Hujan/langit memenuhi sisi tambahan; periuk spawn/despawn di luar skrin sebenar.
   Bounds pergerakan Qish mengambil kira lebar doodle, termasuk pada paparan 16:9.
 - Pas fokus atas permintaan Faris untuk menjimatkan masa/token; tiada audit penuh.
+
+### Model GLB mengikut bandar (2026-10-27)
+
+- Semua fail masih download awal ke cache; title kini decode **0 GLB**. Ketika
+  `Sediakan [bandar]…`, loader menyediakan hanya `ZONE_MODELS` destinasi, maksimum
+  dua fail serentak. Bandar lama dibersihkan sebelum model tidak diperlukan
+  dilepaskan (geometry, material, texture dan ImageBitmap); model kongsi dikekalkan.
+- Inventori semua bandar sebelum/selepas finale: bilik 7, Labu 26 (parti 28), BB 12,
+  Lorbel 3, Lakefront 6, KLIA 4, Nyomnyom 7, FotoBooth 2, Putrajaya 7, Sepang 6.
+  Ini bilangan model aktif, bukan ukuran keseluruhan penggunaan RAM/GPU.
+- Peta normal/metal/rough TRELLIS yang tidak digunakan ditutup sebaik model decode.
+  Pembinaan bandar disusun bersiri; kegagalan fail menawarkan retry termasuk bandar
+  pertama. Tiny-planet tidak lagi dispose geometry milik cache model kongsi.
+- Audit turut menemui pose sniff Bowat cuba memuat nama fail tidak wujud; pose kini
+  memakai muka depan/sisi sedia ada. Tiada aset atau reka bentuk bandar ditukar.
+- `pipeline/audit/zone-models.mjs` lulus 30 keadaan bandar: tiada model hilang atau
+  model tidak diperlukan dalam cache; decoded ImageBitmap tepat sepadan model aktif.
+  Myvi/papan kongsi dipakai semula; kegagalan GLB bandar pertama dan retry lulus,
+  tanpa page error. Bukti audit: `/tmp/qish-zone-models.json` (sementara).
+- Build TypeScript/Vite lulus. Pengesahan ini browser Chromium dengan emulasi touch;
+  ujian crash/FPS pada Safari iPhone sebenar masih diperlukan. Tiada deploy Netlify.

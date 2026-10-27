@@ -189,5 +189,5 @@ export function bendTree(root: THREE.Object3D, maxLen = 2.2) {
       m.geometry = g;
     }
   });
-  for (const [old, g] of done) if (g !== old) old.dispose();
+  for (const [old, g] of done) if (g !== old && !old.userData.shared) old.dispose();
 }

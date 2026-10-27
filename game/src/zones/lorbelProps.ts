@@ -759,7 +759,6 @@ export async function buskingStage(
   // Par cans on the front beam, each throwing a coloured beam that sweeps the stage.
   const COLORS = [0xff4fa0, 0x4fd2ff, 0xffb347, 0xb57cff];
   const beamTex = once(() =>
-    shared(
       canvasTexture(4, 64, (g) => {
         const grad = g.createLinearGradient(0, 0, 0, 64);
         grad.addColorStop(0, "rgba(255,255,255,.75)");
@@ -767,7 +766,6 @@ export async function buskingStage(
         g.fillStyle = grad;
         g.fillRect(0, 0, 4, 64);
       }),
-    ),
   );
   const cans = COLORS.map((col, i) => {
     const pivot = new THREE.Group();

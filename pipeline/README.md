@@ -79,6 +79,8 @@ perlu `MeshoptDecoder` (`three/addons/libs/meshopt_decoder.module.js`).
 - Sprite (rumpun rumput/bunga): `--t2i` atas latar putih, kemudian key putih → alpha (jarak dari putih,
   feather), crop, petak 256, isi warna purata ke piksel lutsinar supaya mipmap tak berbingkai putih.
 - Model dalam game: hanya tekstur warna dipakai (normal map & PBR TRELLIS dibuang dalam `models.ts`).
+  Tambah setiap model ke `MODELS` serta `ZONE_MODELS` bagi bandar yang menggunakannya;
+  GLB hanya di-decode ketika masuk bandar. Download awal semua fail kekal.
 
 ## Set bilik Qish (2026-10-26)
 

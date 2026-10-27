@@ -50,7 +50,7 @@ async function boot() {
     status.textContent = "Semua dah dimuat. Sekejap lagi…";
     root.classList.add("preparing");
     // The loading view paints before the large game libraries are parsed. Main
-    // prepares its models from the warm cache before it enables any game input.
+    // prepares shared sprites/textures; GLBs are decoded when entering a zone.
     game ??= await import("./main");
     await game.startGame();
     window.clearInterval(idle);

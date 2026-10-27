@@ -43,8 +43,15 @@ Panduan commit/ignore, hasil audit dan isu sebelum release:
 
 Sebelum title, loading screen menggunakan latar pastel mimpi dan Bowat idle. Semua 481 aset
 game (sekitar 69 MB, termasuk muzik) dimuat sebelum Press Start muncul. Bar MB/peratus
-berdasarkan byte sebenar, bukan timer. Selepas download, model dan sprite disediakan sebelum
-kawalan title diaktifkan. Fail yang gagal boleh dicuba semula tanpa mengulang fail yang siap.
+berdasarkan byte sebenar, bukan timer. Selepas download, sprite/tekstur kongsi disediakan;
+tiada GLB di-decode pada title. Fail yang gagal boleh dicuba semula tanpa mengulang fail yang siap.
+
+Model GLB di-decode **mengikut bandar** ketika `Sediakan [bandar]…` dipaparkan, maksimum
+dua fail serentak. Bandar lama dibersihkan dahulu; model yang turut digunakan destinasi
+dikekalkan, selebihnya dilepaskan bersama decoded ImageBitmap. Download awal kekal penuh.
+Senarai dependency ialah `ZONE_MODELS` dalam `src/overworld/models.ts`; tambah model baharu
+ke senarai bandar yang memakainya. Uji semua keadaan cerita/cache/retry dengan
+`node pipeline/audit/zone-models.mjs` dari root (dev 5181; `GAME_URL`/`PW_CORE` pilihan).
 
 Senarai/saiz/revisi aset dijana terus daripada `public/assets/` oleh plugin Vite dalam
 `vite.config.ts`, jadi aset eksport mesti committed. `src/boot.ts` ialah entry HTML;

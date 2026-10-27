@@ -1,9 +1,10 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
+import type { ZoneId } from "./zone";
 
-// Generated 3D props (pipeline/tools/gen3d.py -> public/assets/models/*.glb). They are loaded once
-// before the first zone so prop builders can clone them synchronously, like any hand-built prop.
+// Files are downloaded to browser storage at boot. Decode only the current
+// zone's models, then let the synchronous prop builders clone them as before.
 
 const MODELS = {
   myvi: "/assets/models/myvi.glb",
@@ -65,23 +66,66 @@ const MODELS = {
 } as const;
 export type ModelId = keyof typeof MODELS;
 
+// Audited against every zone build before/after the ending. Keep this list in
+// sync when a builder starts using another GLB; the audit checks every request.
+const ZONE_MODELS: Record<ZoneId, readonly ModelId[]> = {
+  bilik: ["bilik_bed", "bilik_console", "bilik_curtain", "bilik_desk", "bilik_door", "bilik_plant", "bilik_wardrobe"],
+  labulanjut: ["arch", "banana", "bench", "bridge", "bush", "clothesline", "coconut", "fence", "hammock", "house", "kedai", "lamppost", "lanternpole", "mailbox", "mango", "motorbike", "myvi", "oilpalm", "pole", "pot", "raintree", "roadblock", "signboard", "stilt_blue", "stilt_terra", "wakaf"],
+  sunway: ["bb_banner_lamp", "bb_bus", "bb_car_green", "bb_car_red", "bb_screen_tower", "bb_shops_left", "bb_shops_right", "bb_taxi", "bb_tree", "motorbike", "myvi", "signboard"],
+  galeri: ["motorbike", "myvi", "signboard"],
+  dusun: ["bench", "lamppost", "myvi", "raintree", "signboard", "wakaf"],
+  angkasa: ["bench", "coconut", "lamppost", "myvi"],
+  cosyplace: ["bb_car_green", "bb_car_red", "bb_taxi", "mango", "myvi", "oilpalm", "raintree"],
+  photobooth: ["myvi", "signboard"],
+  bukit: ["bench", "flowerbed", "motorbike", "myvi", "oilpalm", "raintree", "signboard"],
+  sepang: ["bb_car_green", "bb_car_red", "bench", "coconut", "myvi", "oilpalm"],
+};
+
 const FADE = new Set<ModelId>([
   "house", "kedai", "stilt_blue", "stilt_terra", "wakaf", "mango", "raintree", "banana", "oilpalm", "coconut", "arch",
   "bb_screen_tower", "bb_shops_left", "bb_shops_right", "bb_tree",
 ]);
 
 const cache = new Map<ModelId, THREE.Object3D>();
+const requested = new Set<ModelId>();
+/** Read-only diagnostics for zone dependency and cache lifetime audits. */
+export function modelCacheState() {
+  return { loaded: [...cache.keys()], requested: [...requested], missing: [...requested].filter(id => !cache.has(id)) };
+}
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 
-export async function preloadModels() {
-  await Promise.all(
-    (Object.keys(MODELS) as ModelId[]).map(async (id) => {
+export async function prepareZoneModels(zone: ZoneId, party = false) {
+  const required = new Set(ZONE_MODELS[zone]);
+  if (zone === "labulanjut" && party) {
+    required.delete("roadblock");
+    for (const id of ["cake", "clothtable", "foodtable"] as const) required.add(id);
+  }
+  requested.clear();
+  // Called only AFTER the old scene has been torn down. Retain the intersection
+  // (e.g. Myvi); dispose and close decoded images for everything else.
+  for (const [id, scene] of cache) if (!required.has(id)) {
+    releaseModel(scene);
+    cache.delete(id);
+  }
+  const pending = [...required].filter(id => !cache.has(id));
+  const failures: ModelId[] = [];
+  let next = 0;
+  const worker = async () => {
+    while (next < pending.length) {
+      const id = pending[next++];
       try {
         const gltf = await loader.loadAsync(MODELS[id]);
+        const converted = new Map<THREE.Material, THREE.Material>();
+        const originalTextures = new Set<THREE.Texture>();
+        const keptImages = new Set<unknown>();
+        const geometries = new Set<THREE.BufferGeometry>();
         gltf.scene.traverse((o) => {
           const m = o as THREE.Mesh;
           if (!m.isMesh) return;
-          dequantize(m.geometry);
+          if (!geometries.has(m.geometry)) {
+            dequantize(m.geometry);
+            geometries.add(m.geometry);
+          }
           // `model()` deliberately clones Object3D hierarchies shallowly so many
           // copies stay cheap. Mark the underlying GPU resources as belonging to
           // this cache; zone teardown and static merging must not dispose them.
@@ -89,15 +133,60 @@ export async function preloadModels() {
           const materialValue = m.material as THREE.Material | THREE.Material[];
           const wasArray = Array.isArray(materialValue);
           const materials: THREE.Material[] = wasArray ? materialValue : [materialValue];
-          const flattened = materials.map((material) => flatten(material as THREE.MeshStandardMaterial));
+          const flattened = materials.map((material) => {
+            let value = converted.get(material);
+            if (!value) {
+              for (const texture of Object.values(material)) if (texture?.isTexture) originalTextures.add(texture);
+              const source = material as THREE.MeshStandardMaterial;
+              if (source.map) keptImages.add(source.map.image);
+              value = flatten(source);
+              converted.set(material, value);
+            }
+            return value;
+          });
           m.material = wasArray ? flattened : flattened[0];
         });
+        // TRELLIS normal/metal/rough maps are deliberately stripped. Close
+        // those decoded bitmaps now instead of retaining them with the GLTF.
+        const unusedImages = new Set<unknown>();
+        for (const texture of originalTextures) if (!keptImages.has(texture.image)) {
+          texture.dispose();
+          unusedImages.add(texture.image);
+        }
+        for (const image of unusedImages) closeImage(image);
         cache.set(id, gltf.scene);
       } catch (err) {
-        console.warn(`model ${id} failed to load; using the hand-built fallback`, err);
+        failures.push(id);
+        console.warn(`model ${id} failed to load`, err);
       }
-    }),
-  );
+    }
+  };
+  // Bound decode concurrency to avoid a large burst of images/buffers on iOS.
+  await Promise.all(Array.from({ length: Math.min(2, pending.length) }, worker));
+  if (failures.length) throw new Error(`Models failed to load: ${failures.join(", ")}`);
+}
+
+function closeImage(image: unknown) {
+  if (typeof ImageBitmap !== "undefined" && image instanceof ImageBitmap) image.close();
+}
+
+function releaseModel(scene: THREE.Object3D) {
+  const geometries = new Set<THREE.BufferGeometry>();
+  const materials = new Set<THREE.Material>();
+  const textures = new Set<THREE.Texture>();
+  scene.traverse(o => {
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    geometries.add(mesh.geometry);
+    for (const mat of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+      materials.add(mat);
+      for (const value of Object.values(mat)) if (value?.isTexture) textures.add(value);
+    }
+  });
+  for (const geometry of geometries) geometry.dispose();
+  for (const material of materials) material.dispose();
+  for (const texture of textures) texture.dispose();
+  for (const image of new Set([...textures].map(t => t.image))) closeImage(image);
 }
 
 /** TRELLIS bakes light and shade into the colour texture and ships a noisy normal map and PBR
@@ -126,7 +215,7 @@ function dequantize(geo: THREE.BufferGeometry) {
 
 /** A fresh copy of a generated model sitting on y = 0, centred, facing +z (the camera) as it was
  * generated. `size` sets its longest horizontal side, or its height with `by: "height"` (trees).
- * Null until preloadModels() has it, so callers keep a hand-built fallback. */
+ * Null until prepareZoneModels() has it, so callers keep a hand-built fallback. */
 export function model(id: ModelId, size: number, by: "length" | "height" = "length"): THREE.Group | null {
   return fitted(id, size, by);
 }
@@ -144,6 +233,7 @@ export function modelBox(id: ModelId, w: number, h: number, d: number, turn = fa
 }
 
 function fitted(id: ModelId, size: number, by: "length" | "height"): THREE.Group | null {
+  requested.add(id);
   const src = cache.get(id);
   if (!src) return null;
   const inner = src.clone(true);

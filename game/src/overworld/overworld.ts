@@ -6,7 +6,7 @@ import { save } from "../core/save";
 import { dialogOpen } from "../ui/dialog";
 import { el, stage, ui } from "../ui/dom";
 import { PaperSprite, paperStandee, type Facing } from "./paper";
-import { preloadModels } from "./models";
+import { prepareZoneModels, modelCacheState } from "./models";
 import { preloadTextures } from "./textures";
 import { makeComposer } from "./post";
 import { bendTree, planet } from "./planet";
@@ -99,6 +99,7 @@ export class Overworld {
   /** A scene change is under way; only mount() clears it. */
   private sceneLock = false;
   private ready: Promise<void>;
+  private zoneTask: Promise<void> = Promise.resolve();
 
   constructor(private hooks: OverworldHooks) {
     this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
@@ -143,7 +144,7 @@ export class Overworld {
     // Painted look: shadows read as soft colour shifts, not dark holes.
     this.sun.shadow.intensity = 0.65;
     this.scene.add(this.hemi, this.sun, this.sun.target, this.zoneRoot);
-    await Promise.all([this.player.load("qish"), this.bowat.load("bowat"), preloadModels(), preloadTextures()]);
+    await Promise.all([this.player.load("qish"), this.bowat.load("bowat"), preloadTextures()]);
     this.scene.add(this.player.group, this.bowat.group);
     // Qish and Bowat follow the curve in tiny-planet zones (and stay flat elsewhere).
     bendTree(this.player.group);
@@ -155,7 +156,9 @@ export class Overworld {
     return this.zone?.id ?? null;
   }
 
-  /** Startup keeps the loading view up until cached models and sprites are ready. */
+  modelState() { return modelCacheState(); }
+
+  /** Startup prepares shared sprites/textures; GLBs are decoded on zone entry. */
   whenReady() { return this.ready; }
 
   npc(id: string) {
@@ -189,9 +192,18 @@ export class Overworld {
   }
 
   /** Tear down the current zone and build `def`, placing the player at `spawn`. */
-  async loadZone(def: ZoneDef, spawn: string) {
+  loadZone(def: ZoneDef, spawn: string) {
+    // Serialize builds so overlapping travel requests can't evict models while
+    // another zone is still cloning them. A failed build must not poison retry.
+    const task = this.zoneTask.catch(() => {}).then(() => this.buildZone(def, spawn));
+    this.zoneTask = task;
+    return task;
+  }
+
+  private async buildZone(def: ZoneDef, spawn: string) {
     await this.ready;
     this.disposeZone();
+    await prepareZoneModels(def.id, save.hasCard(8));
     this.zone = def;
     const mood = def.mood?.() ?? {};
     this.scene.background = def.planet?.sky ? skyGradient(def.planet.sky) : new THREE.Color(mood.sky ?? def.sky);
@@ -254,18 +266,28 @@ export class Overworld {
   private disposeZone() {
     const bg = this.scene.background as THREE.Texture | null;
     if (bg?.isTexture) bg.dispose();
+    const geometries = new Set<THREE.BufferGeometry>();
+    const materials = new Set<THREE.Material>();
+    const textures = new Set<THREE.Texture>();
     this.zoneRoot.traverse((o) => {
       const m = o as THREE.Mesh;
-      if (m.geometry && !m.geometry.userData.shared) m.geometry.dispose();
+      if (m.geometry && !m.geometry.userData.shared) geometries.add(m.geometry);
+      if ((o as THREE.InstancedMesh).isInstancedMesh) (o as THREE.InstancedMesh).dispose();
       const mats = m.material ? (Array.isArray(m.material) ? m.material : [m.material]) : [];
       for (const mat of mats) {
-        // Character and card textures are cached and shared across zones; free everything else.
-        const map = (mat as THREE.MeshBasicMaterial).map;
-        if (map && !map.userData.shared) map.dispose();
-        if (!mat.userData.shared) mat.dispose();
+        if (mat.userData.shared) continue;
+        materials.add(mat);
+        // Alpha/emissive maps also own GPU memory, not just the colour map.
+        for (const value of Object.values(mat)) {
+          if (value?.isTexture && !value.userData.shared) textures.add(value);
+        }
       }
     });
+    for (const geometry of geometries) geometry.dispose();
+    for (const texture of textures) texture.dispose();
+    for (const material of materials) material.dispose();
     this.zoneRoot.clear();
+    this.renderer.renderLists.dispose();
     this.npcs.clear();
     this.colliders = [];
     this.blockerSets = [];

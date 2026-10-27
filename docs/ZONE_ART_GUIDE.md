@@ -42,7 +42,7 @@ previews before you build.
 | `style.ts` | Palette `PAL` and `toonify()`: after a zone builds, every Lambert/Phong/Standard material becomes `MeshToonMaterial` with a soft two-band ramp. You build props with plain `flat(color)` or Lambert materials and they still match. |
 | `textures.ts` | Preloads the painted textures (`public/assets/textures/*.webp`). `painted(name, w, h, metres)` / `paintedMat(...)` give a texture repeating every N metres. |
 | `splat.ts` | `splatGround(area, paint)`: ONE ground mesh that mixes grass / dirt / tar / pavers through a soft canvas mask with wobbly edges and paint-dab break-up in the shader. **Every road, path, parking pad, worn patch and river bank goes in here, never as a slab.** |
-| `models.ts` | Preloads generated GLBs (`public/assets/models/*.glb`). `model(id, size, "length" or "height")` and `modelBox(id, w, h, d, turn?)` give a placed copy, or `null` so the builder falls back to the hand-built version. On load it strips TRELLIS's normal/PBR maps (they looked dark and blotchy) and keeps only the colour. `frontZ(obj, x, y)` raycasts the front face of a model, for sticking sign cards on. Buildings and trees get `userData.fade`. |
+| `models.ts` | Decodes generated GLBs for the current zone only (`ZONE_MODELS`); retains models shared with the next zone and releases the others, including decoded bitmaps. `model(id, size, "length" or "height")` and `modelBox(id, w, h, d, turn?)` give a placed copy, or `null` as a hand-built fallback. It strips TRELLIS's normal/PBR maps and keeps only colour. `frontZ(obj, x, y)` raycasts a model's front face. Buildings and trees get `userData.fade`. |
 | `overworld.ts` | `updateFade()` turns faded props 30% see-through when they hide Qish from the camera. `runExit()` spirals out to a free spot if an exit's "back" point is blocked. |
 | `merge.ts` | `mergeStatic()` bakes static props into few draw calls. Fading props are kept whole. `window.__noMerge` (dev) turns baking off for measuring. |
 | `props.ts` | Shared prop builders (palm, bush, bench, lamp, sign, myvi, flower bed, ...). Each tries `model()` first and keeps a hand-built fallback. |
@@ -90,7 +90,9 @@ small prop 3k–8k. If a model comes out with holes, run again with another `--s
    anything with readable text, wrong facing, extra objects or a style break.
 4. **3D.** Run `gen3d.py` for each (background batch). Render the results with `render_glb.py` and
    look for holes, missing parts and orientation. Copy the `.web.glb` files to
-   `game/public/assets/models/<id>.glb` and add each id to `MODELS` in `models.ts`. Add buildings
+   `game/public/assets/models/<id>.glb` and add each id to `MODELS` and the relevant
+   `ZONE_MODELS` entries in `models.ts`. Run `pipeline/audit/zone-models.mjs` to catch missing
+   dependencies before/after the ending. Add buildings
    and trees to the `FADE` set.
 5. **Wire the builders.** In each prop builder: `const gen = model(...)` (or `modelBox` to fill an
    exact box), and `if (gen) return ...` before the old hand-built code, which stays as the fallback.

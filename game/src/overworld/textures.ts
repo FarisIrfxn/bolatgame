@@ -17,6 +17,7 @@ export async function preloadTextures() {
         t.colorSpace = THREE.SRGBColorSpace;
         t.wrapS = t.wrapT = THREE.RepeatWrapping;
         t.anisotropy = 8;
+        t.userData.shared = true;
         cache.set(n, t);
       } catch (err) {
         console.warn(`texture ${n} failed to load`, err);
@@ -32,7 +33,9 @@ export function painted(name: PaintedName, w: number, h: number, metres = 4): TH
   if (!src) return null;
   const t = src.clone();
   t.repeat.set(w / metres, h / metres);
-  t.userData.shared = true;
+  // Only the source belongs to the permanent cache. This UV/repeat view is
+  // owned by the zone and must release its GPU reference when the zone exits.
+  t.userData.shared = false;
   t.needsUpdate = true;
   return t;
 }

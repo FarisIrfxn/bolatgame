@@ -12,7 +12,7 @@ const WALK_FRAMES: Record<string, number> = { qish: 4, bowat: 4 };
 type IdleStep = { face: string; hold: number; dip?: number };
 // Characters with idle faces for the front and side views (`<name>_<dir>_<face>.png`): a blink
 // every few seconds and, with `chance` instead of a blink, one of their routines.
-const IDLE: Record<string, { chance: number; routines: IdleStep[][] }> = {
+const IDLE: Record<string, { chance: number; routines: IdleStep[][]; faces?: string[] }> = {
   qish: { chance: 0.2, routines: [[{ face: "laugh", hold: 1.1 }]] },
   faris: { chance: 0.2, routines: [[{ face: "smile", hold: 1.3 }]] },
   babah: { chance: 0.2, routines: [[{ face: "smile", hold: 1.4 }]] },
@@ -33,7 +33,7 @@ const IDLE: Record<string, { chance: number; routines: IdleStep[][] }> = {
     ],
   },
   // Bowat: a big yawn, or a quiet fart with his eyes squeezed shut ("saya kentut senyap je").
-  bowat: { chance: 0.3, routines: [[{ face: "yawn", hold: 1.8 }], [{ face: "fart", hold: 1.5 }]] },
+  bowat: { chance: 0.3, faces: ["sniff"], routines: [[{ face: "yawn", hold: 1.8 }], [{ face: "fart", hold: 1.5 }]] },
 };
 
 const cache = new Map<string, Promise<{ tex: THREE.Texture; aspect: number; px: number }>>();
@@ -160,7 +160,7 @@ export class PaperSprite {
     const idle = IDLE[name];
     if (idle) {
       this.idle = idle;
-      const names = ["blink", ...new Set(idle.routines.flat().map((st) => st.face).filter(Boolean))];
+      const names = ["blink", ...new Set([...(idle.faces ?? []), ...idle.routines.flat().map((st) => st.face).filter(Boolean)])];
       const load = async (d: string) => {
         const texs = await Promise.all(names.map((f) => paperTexture(`/assets/chars/${name}_${d}_${f}.png`)));
         return Object.fromEntries(names.map((f, k) => [f, texs[k]]));

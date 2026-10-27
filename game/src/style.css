@@ -61,6 +61,7 @@ html, body {
 .travel-failure strong { display: block; margin-bottom: 5px; font: 400 20px/1.2 var(--font-title); color: #874b6b; }
 .travel-failure span { display: block; }
 .travel-failure button { margin-top: 12px; padding: 10px 18px; border: 0; border-radius: 12px; color: #fff; background: #b76595; font: 800 15px var(--font-body); }
+.city-loading { position:absolute; inset:0; z-index:50; display:grid; place-items:center; background:#17151f; color:#fff5eb; font:800 18px var(--font-body); }
 
 /* ---------- Title ---------- */
 .title-screen {

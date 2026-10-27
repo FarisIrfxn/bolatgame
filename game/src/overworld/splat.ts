@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { toonRamp } from "./style";
 import { painted, type PaintedName } from "./textures";
+import { blurMask } from "./maskBlur";
 
 const FALLBACK_COLOUR: Record<PaintedName, [number, number, number]> = {
   grass: [143, 196, 90], dirt: [187, 143, 91], planks: [164, 112, 73], bricks: [184, 105, 87],
@@ -141,12 +142,7 @@ export function splatGround(
   paint(painter);
 
   // Soften every edge a little; the shader adds the painterly break-up on top.
-  const mask = document.createElement("canvas");
-  mask.width = W;
-  mask.height = H;
-  const m = mask.getContext("2d")!;
-  m.filter = `blur(${Math.max(1, pxPerMetre * 0.25)}px)`;
-  m.drawImage(raw, 0, 0);
+  const mask = blurMask(raw, Math.max(1, pxPerMetre * 0.25));
   const maskTex = new THREE.CanvasTexture(mask);
   maskTex.colorSpace = THREE.NoColorSpace;
   // Explicit filters matter on Safari: the default mipmap path can make the
@@ -173,6 +169,13 @@ export function splatGround(
     reps: { value: new THREE.Vector4(w / metres.grass, w / metres.dirt, w / metres.tar, w / metres.pavers) },
     aspect: { value: d / w },
   };
+  // Uniform-only textures aren't reachable through material.map. Release them
+  // with their material, including the large canvas mask, on every zone exit.
+  mat.addEventListener("dispose", () => {
+    for (const texture of new Set([maskTex, uniforms.tDirt.value, uniforms.tTar.value, uniforms.tPavers.value])) {
+      if (!texture.userData.shared) texture.dispose();
+    }
+  });
   mat.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);
     shader.fragmentShader = shader.fragmentShader

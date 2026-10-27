@@ -118,7 +118,7 @@ let travelFailure: HTMLElement | null = null;
 
 function showTravelFailure(retry: () => void) {
   travelFailure?.remove();
-  travelFailure = el("div", "travel-failure", `<strong>World sangkut sekejap.</strong><span>Safari mungkin sedang pulihkan grafik. Cuba masuk semula.</span><button type="button">Cuba lagi</button>`);
+  travelFailure = el("div", "travel-failure", `<strong>Belum dapat sediakan bandar.</strong><span>Semak sambungan dan cuba lagi ya.</span><button type="button">Cuba lagi</button>`);
   travelFailure.querySelector("button")!.addEventListener("click", () => {
     travelFailure?.remove();
     travelFailure = null;
@@ -311,15 +311,25 @@ function clearScene(keepMusic = false) {
 async function toZone(id: ZoneId, spawn: string) {
   clearScene(true);
   music.play("overworld");
-  await overworld.loadZone(ZONES[id], spawn);
-  await overworld.mount();
-  showHud(ZONES[id].name + (id === "bilik" ? bedroomProgress() : ""));
-  refreshCollect(id);
-  save.data.zone = id;
-  save.write();
+  const loading = el("div", "city-loading");
+  loading.textContent = `Sediakan ${ZONES[id].name}…`;
+  loading.setAttribute("role", "status");
+  document.getElementById("game-viewport")!.appendChild(loading);
+  try {
+    // Let the loading message paint before synchronous geometry/mask work.
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    await overworld.loadZone(ZONES[id], spawn);
+    await overworld.mount();
+    showHud(ZONES[id].name + (id === "bilik" ? bedroomProgress() : ""));
+    refreshCollect(id);
+    save.data.zone = id;
+    save.write();
+  } finally { loading.remove(); }
 }
 
 async function travel(id: ZoneId, spawn: string) {
+  travelFailure?.remove();
+  travelFailure = null;
   const previous = overworld.currentZone;
   overworld.lock();
   try {
@@ -338,8 +348,8 @@ async function travel(id: ZoneId, spawn: string) {
     } catch (recoveryError) {
       console.error("Travel recovery failed", recoveryError);
       overworld.unlock();
-      showTravelFailure(() => void travel(id, spawn));
     }
+    showTravelFailure(() => void travel(id, spawn));
   }
 }
 
@@ -706,7 +716,7 @@ async function testReveal(n: number) {
 }
 
 // Test hook for headless playthroughs (dev server only).
-if (import.meta.env.DEV) Object.assign(window, { __pokelove: { overworld, save, travel, playEnding, say, boardSampan, playBoss, activeMinigameScene, music, input, myviTravel, replayConsole } });
+if (import.meta.env.DEV) Object.assign(window, { __pokelove: { overworld, save, travel, loadZone: toZone, playEnding, say, boardSampan, playBoss, activeMinigameScene, music, input, myviTravel, replayConsole } });
 
 export async function startGame() {
   await overworld.whenReady();
