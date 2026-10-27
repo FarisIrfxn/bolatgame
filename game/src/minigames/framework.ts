@@ -101,7 +101,6 @@ export async function prepareMinigame(def: MinigameDef) {
 export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroReady?: () => void): Promise<"win" | "skip"> {
   host.classList.add("storybook-host");
   await prepareMinigame(def);
-  const backdrop = `/assets/storybook/bg_${def.id}.webp`;
   host.dataset.boss = def.id;
   const syncBackdrop = () => {
     const wide = gameViewport.width / gameViewport.height > 1280 / 720 + .005;
