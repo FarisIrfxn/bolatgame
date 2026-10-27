@@ -4,6 +4,7 @@ import { gameViewport } from "../core/viewport";
 import { onFrame } from "../core/loop";
 import { save } from "../core/save";
 import { diagnostic } from "../core/diagnostics";
+import { GRAPHICS_PROFILES, graphicsMode, graphicsTier, onGraphicsChange, setAutomaticTier, type GraphicsTier } from "../core/graphics";
 import { dialogOpen } from "../ui/dialog";
 import { el, stage, ui } from "../ui/dom";
 import { PaperSprite, paperStandee, releaseZonePaperTextures, type Facing } from "./paper";
@@ -101,14 +102,21 @@ export class Overworld {
   private zoneTask: Promise<void> = Promise.resolve();
   private sampleAt = performance.now();
   private sampleFrames = 0;
+  private graphicsTierNow: GraphicsTier = graphicsTier();
+  private slowSamples = 0;
+  private fastSamples = 0;
 
   constructor(private hooks: OverworldHooks) {
-    this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+    this.renderer.setPixelRatio(Math.min(GRAPHICS_PROFILES[this.graphicsTierNow].maxDpr, window.devicePixelRatio));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.16;
-    this.post = makeComposer(this.renderer, this.scene, this.camera, { lowPower: TOUCH_DEVICE });
+    this.post = makeComposer(this.renderer, this.scene, this.camera, { lowPower: this.graphicsTierNow > 0 });
+    onGraphicsChange((_mode, tier) => {
+      this.slowSamples = this.fastSamples = 0;
+      this.applyGraphicsTier(tier);
+    });
     this.webglWarning.hidden = true;
     ui().appendChild(this.webglWarning);
     this.renderer.domElement.addEventListener("webglcontextlost", (event) => {
@@ -137,7 +145,7 @@ export class Overworld {
   private async init() {
     await Promise.all([document.fonts.load("74px 'Bagel Fat One'"), document.fonts.load("bold 64px 'Gaegu'")]).catch(() => {});
     this.sun.castShadow = true;
-    const shadowSize = navigator.maxTouchPoints > 0 ? 1024 : 2048;
+    const shadowSize = GRAPHICS_PROFILES[this.graphicsTierNow].shadowSize;
     this.sun.shadow.mapSize.set(shadowSize, shadowSize);
     const sc = this.sun.shadow.camera;
     sc.left = -26;
@@ -428,10 +436,26 @@ export class Overworld {
     const fov = this.zone?.planet?.fov ?? [34, 48];
     this.camera.fov = w / h < 1 ? fov[1] : fov[0];
     this.camera.updateProjectionMatrix();
-    const screenDpr = TOUCH_DEVICE ? Math.min(1.25, window.devicePixelRatio) : window.devicePixelRatio;
-    this.renderer.setPixelRatio(Math.min(2, screenDpr * scale));
+    const screenDpr = Math.min(GRAPHICS_PROFILES[this.graphicsTierNow].maxDpr, window.devicePixelRatio);
+    this.renderer.setPixelRatio(screenDpr * scale);
     this.renderer.setSize(w, h);
     this.post.resize(w, h);
+  }
+
+  private applyGraphicsTier(tier: GraphicsTier) {
+    const profile = GRAPHICS_PROFILES[tier];
+    diagnostic("graphics setting", { mode: graphicsMode(), tier, ...profile });
+    if (tier === this.graphicsTierNow) return;
+    this.graphicsTierNow = tier;
+    if (this.sun.shadow.mapSize.x !== profile.shadowSize || this.sun.shadow.mapSize.y !== profile.shadowSize) {
+      this.sun.shadow.map?.dispose();
+      this.sun.shadow.map = null;
+      this.sun.shadow.mapSize.set(profile.shadowSize, profile.shadowSize);
+      this.sun.shadow.needsUpdate = true;
+    }
+    this.post.setTiltShift(profile.tiltShift);
+    this.resize();
+    diagnostic("graphics quality applied", { mode: graphicsMode(), tier, ...profile });
   }
 
   private blocked(x: number, z: number) {
@@ -516,10 +540,11 @@ export class Overworld {
     this.updateCamera(dt);
     this.updateFade(dt);
     this.post.composer.render(dt);
-    if (TOUCH_DEVICE) {
+    if (!document.hidden) {
       this.sampleFrames++;
       const elapsed = performance.now() - this.sampleAt;
       if (elapsed >= 5000) {
+        const fps = Math.round(this.sampleFrames * 1000 / elapsed);
         const closedMaps = new Set<THREE.Texture>();
         this.zoneRoot.traverse(o => {
           const m = o as THREE.Mesh;
@@ -533,15 +558,31 @@ export class Overworld {
         });
         diagnostic("world performance", {
           zone: this.zone.id,
-          fps: Math.round(this.sampleFrames * 1000 / elapsed),
+          fps,
           gpuTextures: this.renderer.info.memory.textures,
           gpuGeometries: this.renderer.info.memory.geometries,
           closedMaps: closedMaps.size,
           canvas: [this.renderer.domElement.width, this.renderer.domElement.height],
+          mode: graphicsMode(),
+          tier: this.graphicsTierNow,
         });
+        if (graphicsMode() === "auto") {
+          this.slowSamples = fps < 43 ? this.slowSamples + 1 : 0;
+          this.fastSamples = fps > 56 ? this.fastSamples + 1 : 0;
+          if (this.slowSamples >= 2 && this.graphicsTierNow < 2) {
+            this.slowSamples = this.fastSamples = 0;
+            setAutomaticTier((this.graphicsTierNow + 1) as GraphicsTier);
+          } else if (this.fastSamples >= 6 && this.graphicsTierNow > 0) {
+            this.slowSamples = this.fastSamples = 0;
+            setAutomaticTier((this.graphicsTierNow - 1) as GraphicsTier);
+          }
+        }
         this.sampleAt = performance.now();
         this.sampleFrames = 0;
       }
+    } else {
+      this.sampleAt = performance.now();
+      this.sampleFrames = 0;
     }
   }
 

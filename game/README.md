@@ -111,10 +111,18 @@ panorama/road penuh dengan aturan tiga lorong asal. Finale mempunyai menu move s
 native (minimum 44px); memory boleh ditap terus tanpa joystick menutup grid.
 
 Input dilepaskan selepas rotate, blur, pointer cancel atau app switch. Dialog/surat
-boleh diskrol dengan jari. Renderer dunia fon dihadkan kepada DPR 1.5 dan shadow map
-1024px; frame clock dan Phaser dihadkan kepada 60 FPS pada peranti touch. Ini had
-render, bukan jaminan FPS pada semua perkakasan. Semua **481 aset / 69.3 MB** masih
+boleh diskrol dengan jari. Renderer dunia menggunakan profil grafik adaptif: DPR maksimum
+2/1.25/1 dan shadow map 2048/1024/512px bagi tinggi/sederhana/rendah. Frame clock dan
+Phaser dihadkan kepada 60 FPS pada peranti touch. Ini had render, bukan jaminan FPS pada
+semua perkakasan. Semua **481 aset / 69.3 MB** masih
 dimuat di awal, mengikut keputusan Faris; panorama menambah 1.77 MB.
+
+Tetapan `Grafik` dalam menu sambung berputar antara **Auto**, **Rendah** dan **Tinggi**
+serta disimpan berasingan daripada save cerita. Auto bermula dengan profil sederhana pada
+peranti touch dan tinggi pada peranti lain; bacaan FPS lima saat menurunkan kualiti selepas
+dua sampel di bawah 43 FPS, dan menaikkannya semula selepas enam sampel melebihi 56 FPS.
+Perubahan melaras DPR, resolusi shadow map dan tilt-shift. FPS, kiraan sumber GPU dan
+pertukaran profil direkodkan melalui `?diag=1`.
 
 Audit: `pipeline/audit/mobile-fullscreen*.mjs`. Sumber/prompt Imagegen, exporter,
 screenshot dan laporan: [mobile fullscreen](../art/mobile-fullscreen-2026-10-27/README.md).

@@ -16,10 +16,26 @@ export function diagnostic(event: string, detail?: unknown) {
   refresh();
 }
 
-window.addEventListener("error", e => diagnostic("js error", { message: e.message, file: e.filename, line: e.lineno }));
+let resizeLoopErrors = 0;
+let lastResizeLoopLog = 0;
+window.addEventListener("error", e => {
+  if (e.message === "ResizeObserver loop completed with undelivered notifications.") {
+    resizeLoopErrors++;
+    const now = performance.now();
+    if (now - lastResizeLoopLog >= 5000) {
+      lastResizeLoopLog = now;
+      diagnostic("resize observer loop", { count: resizeLoopErrors, viewport: [innerWidth, innerHeight], visualViewport: window.visualViewport ? [Math.round(window.visualViewport.width), Math.round(window.visualViewport.height)] : null });
+      resizeLoopErrors = 0;
+    }
+    return;
+  }
+  diagnostic("js error", { message: e.message, file: e.filename, line: e.lineno });
+});
 window.addEventListener("unhandledrejection", e => diagnostic("promise error", String(e.reason?.stack || e.reason)));
-window.addEventListener("pagehide", () => diagnostic("page hidden"));
-diagnostic("page opened", { ua: navigator.userAgent, viewport: [innerWidth, innerHeight], dpr: devicePixelRatio });
+document.addEventListener("visibilitychange", () => diagnostic("visibility changed", { state: document.visibilityState, viewport: [innerWidth, innerHeight] }));
+window.addEventListener("pagehide", e => diagnostic("page hidden", { persisted: e.persisted, state: document.visibilityState, viewport: [innerWidth, innerHeight] }));
+const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+diagnostic("page opened", { ua: navigator.userAgent, viewport: [innerWidth, innerHeight], dpr: devicePixelRatio, navigation: navigation?.type ?? "unknown", deviceMemory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? null });
 
 if (new URLSearchParams(location.search).has("diag")) {
   const show = () => {

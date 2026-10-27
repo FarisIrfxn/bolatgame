@@ -72,17 +72,17 @@ export function makeComposer(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
   composer.addPass(new RenderPass(scene, camera));
   const h = new ShaderPass(tiltShift([1, 0], tilt));
   const v = new ShaderPass(tiltShift([0, 1], tilt));
-  if (!tilt.lowPower) {
-    composer.addPass(h);
-    composer.addPass(v);
-  }
+  composer.addPass(h);
+  composer.addPass(v);
   composer.addPass(new ShaderPass(grade));
   composer.addPass(new OutputPass());
+  const setTiltShift = (enabled: boolean) => { h.enabled = v.enabled = enabled; };
+  setTiltShift(!tilt.lowPower);
   const resize = (w: number, hgt: number) => {
     composer.setPixelRatio(renderer.getPixelRatio());
     composer.setSize(w, hgt);
     const px = renderer.getPixelRatio();
-    if (!tilt.lowPower) for (const p of [h, v]) p.uniforms.resolution.value.set(w * px, hgt * px);
+    for (const p of [h, v]) p.uniforms.resolution.value.set(w * px, hgt * px);
   };
-  return { composer, resize };
+  return { composer, resize, setTiltShift };
 }

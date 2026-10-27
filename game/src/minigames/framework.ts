@@ -105,7 +105,12 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
   host.dataset.boss = def.id;
   const syncBackdrop = () => {
     const wide = gameViewport.width / gameViewport.height > 1280 / 720 + .005;
-    host.style.background = `#f4dbe5 url("${wide ? `/assets/mobile/bg_${def.id}.webp` : backdrop}") center / cover no-repeat`;
+    // Normal aspect ratios already draw the 16:9 art inside the Phaser canvas.
+    // A second CSS copy behind it can drift/crop on laptop viewports. The CSS
+    // panorama is only needed outside the centered arena on genuinely wide screens.
+    host.style.background = wide
+      ? `#f4dbe5 url("/assets/mobile/bg_${def.id}.webp") center / cover no-repeat`
+      : "#f4dbe5";
   };
   syncBackdrop();
   window.addEventListener("gameviewportresize", syncBackdrop);

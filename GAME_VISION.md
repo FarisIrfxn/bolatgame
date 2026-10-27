@@ -1983,3 +1983,19 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
   di `art/style/bukit_bintang_mobile_before.png` dan `bukit_bintang_mobile_after.png`.
   Build production lulus. Safari iPhone fizikal, FPS sebenar dan punca tepat model hitam
   masih perlu disahkan menggunakan log/peranti tersebut; tiada deploy Netlify.
+
+### Grafik adaptif, resize Safari dan latar boss laptop (2026-10-27)
+
+- Menu sambung ada pilihan grafik **Auto / Rendah / Tinggi**, disimpan berasingan
+  daripada progres. Auto bermula sederhana pada peranti touch dan tinggi pada desktop;
+  bacaan FPS 5 saat menurunkan tier selepas dua bacaan bawah 43 FPS dan menaikkan
+  selepas enam bacaan melebihi 56 FPS. Tier mengubah had DPR, resolusi shadow map
+  dan tilt-shift. Metrik/perubahan dicatat dalam `?diag=1`.
+- Resize viewport kini dijadualkan sekali setiap frame dan tidak lagi memerhati
+  `#game-shell` sambil menulis saiz pada elemen yang sama. Ralat ResizeObserver dalam
+  diagnostik diringkaskan agar tidak menenggelamkan log.
+- CSS panorama boss hanya dilukis di luar arena pada skrin lebar. Nisbah biasa kini
+  menggunakan latar Phaser sahaja, supaya latar 16:9 tidak bertindih dengan salinan
+  CSS yang mungkin terskala atau tercrop berbeza.
+- Belum diuji pada peranti fizikal atau laptop yang melaporkan isu; perubahan memerlukan
+  semakan browser sebelum deploy.

@@ -13,6 +13,7 @@ export const gameViewport = { width: GAME_WIDTH, height: GAME_HEIGHT, scale: 1, 
   safe: { top: 0, right: 0, bottom: 0, left: 0 } };
 export const ARENA_STYLE = "position:absolute;left:calc(50% + (var(--game-safe-left) - var(--game-safe-right)) / 2);top:calc(50% + (var(--game-safe-top) - var(--game-safe-bottom)) / 2);width:min(calc(100% - var(--game-safe-left) - var(--game-safe-right)),calc((100cqh - var(--game-safe-top) - var(--game-safe-bottom)) * 16 / 9)) !important;height:auto !important;transform:translate(-50%,-50%)";
 let previous = "";
+let resizeFrame = 0;
 
 function resizeViewport() {
   const visible = window.visualViewport;
@@ -30,12 +31,14 @@ function resizeViewport() {
   if (key === previous) return;
   previous = key;
   Object.assign(gameViewport, { width: w, height: h, scale, landscape });
-  Object.assign(shell.style, { width: `${width}px`, height: `${height}px`, left: `${left}px`, top: `${top}px` });
-  Object.assign(viewport.style, {
-    width: `${w}px`, height: `${h}px`,
-    left: "0px", top: "0px",
-    transform: `scale(${scale})`,
-  });
+  const setStyles = (node: HTMLElement, styles: Record<string, string>) => {
+    for (const [key, value] of Object.entries(styles)) {
+      const property = key.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
+      if (node.style.getPropertyValue(property) !== value) node.style.setProperty(property, value);
+    }
+  };
+  setStyles(shell, { width: `${width}px`, height: `${height}px`, left: `${left}px`, top: `${top}px` });
+  setStyles(viewport, { width: `${w}px`, height: `${h}px`, left: "0px", top: "0px", transform: `scale(${scale})` });
   for (const [i, side] of ["top", "right", "bottom", "left"].entries()) {
     viewport.style.setProperty(`--game-safe-${side}`, `${safe[i] / scale}px`);
     gameViewport.safe[side as keyof typeof gameViewport.safe] = safe[i] / scale;
@@ -49,7 +52,10 @@ function resizeViewport() {
 }
 
 resizeViewport();
-window.addEventListener("resize", resizeViewport);
-window.visualViewport?.addEventListener("resize", resizeViewport);
-window.visualViewport?.addEventListener("scroll", resizeViewport);
-new ResizeObserver(resizeViewport).observe(shell);
+const queueResize = () => {
+  if (resizeFrame) return;
+  resizeFrame = requestAnimationFrame(() => { resizeFrame = 0; resizeViewport(); });
+};
+window.addEventListener("resize", queueResize);
+window.visualViewport?.addEventListener("resize", queueResize);
+window.visualViewport?.addEventListener("scroll", queueResize);

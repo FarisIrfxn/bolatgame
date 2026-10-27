@@ -15,6 +15,7 @@ import { sfx } from "./core/sfx";
 import { music } from "./core/music";
 import { BOSSES, bossOfZone, type BossId } from "./content/bosses";
 import { diagnostic } from "./core/diagnostics";
+import { cycleGraphicsMode, graphicsLabel } from "./core/graphics";
 import {
   ALL_CLUES,
   BABAH,
@@ -687,10 +688,14 @@ async function title() {
     return intro();
   }
   while (true) {
-    const pick = await chooseMenu(inner, ["Sambung", "Main baru"]);
+    const pick = await chooseMenu(inner, ["Sambung", `Grafik: ${graphicsLabel()}`, "Main baru"]);
     if (pick === 0) {
       const z = save.data.zone as ZoneId | undefined;
       return travel(z && ZONES[z] ? z : "labulanjut", "start");
+    }
+    if (pick === 1) {
+      cycleGraphicsMode();
+      continue;
     }
     const sure = await chooseMenu(inner, ["Tak jadi", "Ya, mula baru"], "Mula semula? Progress lama akan hilang.");
     if (sure === 1) {
