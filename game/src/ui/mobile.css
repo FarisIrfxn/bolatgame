@@ -79,6 +79,7 @@ body:has(.storybook-host[data-boss="bolatex"]) #touch-ui :is(.stick,.btn-a) { di
 }
 :fullscreen .mobile-fullscreen { display: none; }
 @media (display-mode: standalone) { .mobile-fullscreen { display: none; } }
+@media (display-mode: fullscreen) { .mobile-fullscreen { display: none; } }
 
 /* Extra hit area preserves the visible desktop button sizes. */
 body[data-input-device="touch"] :is(.picker-close,.picker-confirm,.letter-next) { position: relative; }

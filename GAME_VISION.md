@@ -1732,7 +1732,8 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
 - Favicon ICO 16/32/48px, PNG 16/32px, Apple touch icon 180px dan manifest icon 192/512px.
   Latar penuh, tanpa sudut bulat dibakar; mata/hidung/lidah berada dalam ruang mask tengah.
 - `game/index.html` memasang nama tab, metadata iOS, manifest dan ikon; manifest memakai
-  nama penuh pada name/short_name serta display standalone. Logo title game kekal.
+  nama penuh pada name/short_name serta display fullscreen untuk A2HS Android. Logo title
+  game kekal.
 - Validasi: TypeScript/Vite production build lulus. Chromium desktop 1280×720 dan mobile
   390×844: nama tepat, manifest tanpa parse/installability error, semua ikon production
   sepadan fail sumber dan boleh didekod, tiada page error. Preview favicon serta mask
@@ -2007,13 +2008,20 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
   tambahan di sisi untuk skrin lebar, atau atas/bawah untuk laptop 16:10. World bounds dan
   hitbox kekal 1280×720. Latar CSS penuh digunakan di luar nisbah 16:9; portrait kekal
   arena 16:9 berpusat. Runner custom ikut aturan fill/crop yang sama dalam landscape.
-- Grafik tidak lagi berubah berdasarkan FPS atau menu pilihan. iPhone/iPad guna profil
-  Low tetap (DPR 0.8, tanpa shadow dan post-processing); Android dinilai daripada petunjuk
+- Grafik tidak lagi berubah berdasarkan FPS atau menu pilihan pemain biasa. Profil
+  automatik kekal default. Panel dev tersembunyi boleh menetapkan override Low/Medium/High
+  yang berkuat kuasa selepas reload; lima tap pantas di penjuru kiri atas membukanya pada
+  telefon. iPhone/iPad automatik guna profil Low (DPR 0.8, tanpa shadow dan post-processing); Android dinilai daripada petunjuk
   RAM/CPU/GPU, desktop RTX/GeForce atau Radeon RX guna profil tinggi, selebihnya sederhana.
 - Log WebKit umum menunjukkan iPhone 11/11 Pro pernah mengalami WebGL context loss pada
   keluaran iOS 18 terdahulu; laporan berkaitan turut menyebut GPU command-buffer hang.
   Bug shader yang berasingan ditandakan telah dibaiki dalam iOS 18.5. Ini menyokong
   kemungkinan had WebGL/GPU pada Safari, bukan bukti punca tepat untuk game ini.
+- Manifest Android A2HS ditukar daripada `standalone` ke `fullscreen` supaya aplikasi
+  landscape boleh menggunakan ruang paparan penuh, termasuk menyembunyikan status dan
+  navigation bar apabila browser menyokong mod itu.
+- Override grafik debug disimpan berasingan daripada save game dan digunakan selepas reload;
+  kembali ke Auto mengosongkan override. Log grafik turut menyatakan pilihan semasa.
 - Build TypeScript/Vite lulus selepas perubahan; Safari iPhone dan laptop sebenar belum
   diuji. Log peranti masih diperlukan untuk mengesahkan sama ada profil Low mengelakkan
   kehilangan konteks.

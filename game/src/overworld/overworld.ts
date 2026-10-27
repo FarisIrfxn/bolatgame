@@ -4,7 +4,7 @@ import { gameViewport } from "../core/viewport";
 import { onFrame } from "../core/loop";
 import { save } from "../core/save";
 import { diagnostic } from "../core/diagnostics";
-import { detectGraphicsProfile, type GraphicsProfile } from "../core/graphics";
+import { detectGraphicsProfile, getGraphicsPreference, type GraphicsProfile } from "../core/graphics";
 import { dialogOpen } from "../ui/dialog";
 import { el, stage, ui } from "../ui/dom";
 import { PaperSprite, paperStandee, releaseZonePaperTextures, type Facing } from "./paper";
@@ -114,7 +114,7 @@ export class Overworld {
     if (this.graphicsProfile.postProcessing !== "none") {
       this.post = makeComposer(this.renderer, this.scene, this.camera, { lowPower: this.graphicsProfile.postProcessing !== "cinematic" });
     }
-    diagnostic("graphics profile", { ...this.graphicsProfile, gpu: this.graphicsRendererName() });
+    diagnostic("graphics profile", { ...this.graphicsProfile, preference: getGraphicsPreference(), gpu: this.graphicsRendererName() });
     this.webglWarning.hidden = true;
     ui().appendChild(this.webglWarning);
     this.renderer.domElement.addEventListener("webglcontextlost", (event) => {

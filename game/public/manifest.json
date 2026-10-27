@@ -5,7 +5,7 @@
   "lang": "ms",
   "start_url": "/",
   "scope": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "landscape",
   "background_color": "#fff3f8",
   "theme_color": "#f63891",

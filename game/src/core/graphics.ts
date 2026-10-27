@@ -1,5 +1,8 @@
 export type GraphicsTier = 0 | 1 | 2;
 export type GraphicsProfile = { tier: GraphicsTier; name: "tinggi" | "sederhana" | "rendah"; maxDpr: number; shadowSize: number; shadows: boolean; postProcessing: "cinematic" | "grade" | "none" };
+export type GraphicsPreference = "auto" | GraphicsProfile["name"];
+
+const PREFERENCE_KEY = "qish-graphics-preference-v1";
 
 const PROFILES: readonly GraphicsProfile[] = [
   { tier: 0, name: "tinggi", maxDpr: 2, shadowSize: 2048, shadows: true, postProcessing: "cinematic" },
@@ -9,6 +12,26 @@ const PROFILES: readonly GraphicsProfile[] = [
 
 /** Pick once per app session. Safari hides device memory and GPU model, so iOS is conservative. */
 export function detectGraphicsProfile(renderer: { getContext(): WebGLRenderingContext | WebGL2RenderingContext }): GraphicsProfile {
+  const automatic = detectAutomaticGraphicsProfile(renderer);
+  const preference = getGraphicsPreference();
+  return preference === "auto" ? automatic : PROFILES.find((profile) => profile.name === preference) ?? automatic;
+}
+
+export function getGraphicsPreference(): GraphicsPreference {
+  try {
+    const stored = localStorage.getItem(PREFERENCE_KEY);
+    return stored === "tinggi" || stored === "sederhana" || stored === "rendah" ? stored : "auto";
+  } catch { return "auto"; }
+}
+
+export function setGraphicsPreference(preference: GraphicsPreference): void {
+  try {
+    if (preference === "auto") localStorage.removeItem(PREFERENCE_KEY);
+    else localStorage.setItem(PREFERENCE_KEY, preference);
+  } catch { /* private browsing may block storage */ }
+}
+
+function detectAutomaticGraphicsProfile(renderer: { getContext(): WebGLRenderingContext | WebGL2RenderingContext }): GraphicsProfile {
   const ua = navigator.userAgent;
   const iosTouch = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   let gpu = "";

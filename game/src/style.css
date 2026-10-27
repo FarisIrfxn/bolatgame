@@ -425,13 +425,19 @@ html, body {
 
 /* ---------- Dev panel ---------- */
 .dev {
-  position: absolute; top: 10px; left: 10px; z-index: 50; background: #111827; color: #e5e7eb;
-  border-radius: 10px; padding: 12px; font: 13px/1.4 ui-monospace, monospace; width: 270px; box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  position: fixed; top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left)); z-index: 50;
+  box-sizing: border-box; width: min(294px, calc(100vw - 20px));
+  max-height: calc(100dvh - max(10px, env(safe-area-inset-top)) - 10px); overflow-y: auto; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch; background: #111827; color: #e5e7eb;
+  border-radius: 10px; padding: 12px; font: 13px/1.4 ui-monospace, monospace; box-shadow: 0 10px 30px rgba(0,0,0,.5);
 }
 .dev h4 { margin: 0 0 8px; color: #fbbf24; }
 .dev button { display: block; width: 100%; margin: 4px 0; padding: 6px 8px; background: #1f2937; color: inherit; border: 1px solid #374151; border-radius: 6px; text-align: left; cursor: pointer; font: inherit; }
 .dev button:hover { background: #374151; }
 .dev label { display: flex; gap: 6px; align-items: center; margin: 6px 0; }
+.dev-graphics { display: grid; gap: 4px; margin: 10px 0; padding: 8px; border: 1px solid #374151; border-radius: 7px; }
+.dev-graphics select { width: 100%; padding: 6px; border-radius: 5px; font: inherit; }
+.dev-graphics small { color: #cbd5e1; }
 
 /* ---------- Fade ---------- */
 .fade { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .45s ease; z-index: 40; }

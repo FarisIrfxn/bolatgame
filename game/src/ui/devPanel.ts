@@ -1,4 +1,5 @@
 import { save } from "../core/save";
+import { getGraphicsPreference, setGraphicsPreference, type GraphicsPreference } from "../core/graphics";
 import { el } from "./dom";
 import { refreshHud } from "./hud";
 
@@ -33,6 +34,30 @@ export function mountDevPanel(actions: DevActions) {
       });
       panel!.appendChild(b);
     };
+    const graphics = el("section", "dev-graphics");
+    const graphicsTitle = el("strong", "", "Grafik (debug)");
+    const graphicsSelect = el("select");
+    const choices: [GraphicsPreference, string][] = [
+      ["auto", "Auto ikut peranti"],
+      ["rendah", "Rendah"],
+      ["sederhana", "Sederhana"],
+      ["tinggi", "Tinggi"],
+    ];
+    for (const [value, label] of choices) {
+      const option = el("option", "", label);
+      option.value = value;
+      graphicsSelect.appendChild(option);
+    }
+    graphicsSelect.value = getGraphicsPreference();
+    const graphicsHint = el("small", "", "Profil digunakan selepas reload. Auto ikut pengesanan peranti.");
+    const applyGraphics = el("button", "", "Guna profil & reload");
+    applyGraphics.type = "button";
+    applyGraphics.addEventListener("click", () => {
+      setGraphicsPreference(graphicsSelect.value as GraphicsPreference);
+      window.location.reload();
+    });
+    graphics.append(graphicsTitle, graphicsSelect, graphicsHint, applyGraphics);
+    panel.appendChild(graphics);
     const check = (label: string, value: boolean, fn: (v: boolean) => void) => {
       const l = el("label");
       const c = el("input");

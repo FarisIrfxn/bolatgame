@@ -103,7 +103,10 @@ CSS layout memakai `cqw/cqh` dan `@container game`. Teks menggunakan `--ui-vw`, 
 lebar rujukan 1280/100 pada landscape, supaya huruf tidak membesar ikut lebar fon.
 `ui/mobile.css` memusatkan panel dan menambat HUD kepada sisi yang selamat. Joystick/A/B
 serta hit area interaktif memakai saiz piksel fizikal. Tombol fullscreen pada title
-muncul jika browser touch menyokongnya; manifest installed app meminta landscape.
+muncul jika browser touch menyokongnya; manifest A2HS meminta landscape dan fullscreen
+supaya Android boleh menyembunyikan status/navigation bar. Panel dev rahsia dibuka dengan
+`~` pada keyboard atau lima tap pantas di penjuru kiri atas pada telefon. Bahagian Grafik
+menyimpan override debug dan reload; pilihan biasa kekal Auto ikut peranti.
 
 Boss Phaser mengekalkan bounds gameplay 1280×720, sementara kamera/render window
 memenuhi landscape: paparan lebih lebar menunjukkan kawasan tambahan di sisi, skrin
