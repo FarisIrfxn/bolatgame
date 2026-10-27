@@ -114,6 +114,18 @@ import { KG_GOAL, KG_PER_STATION, KG_START, STATIONS, burn, gym, kgNow, kgText, 
 
 let screen: HTMLElement | null = null;
 let minigameHost: HTMLDivElement | null = null;
+let travelFailure: HTMLElement | null = null;
+
+function showTravelFailure(retry: () => void) {
+  travelFailure?.remove();
+  travelFailure = el("div", "travel-failure", `<strong>World sangkut sekejap.</strong><span>Safari mungkin sedang pulihkan grafik. Cuba masuk semula.</span><button type="button">Cuba lagi</button>`);
+  travelFailure.querySelector("button")!.addEventListener("click", () => {
+    travelFailure?.remove();
+    travelFailure = null;
+    retry();
+  }, { once: true });
+  ui().appendChild(travelFailure);
+}
 
 /** The way on opens once the zone's boss is beaten, or (zones without a boss) everything is collected. */
 const zoneCleared = (z: ZoneId) => {
@@ -308,10 +320,27 @@ async function toZone(id: ZoneId, spawn: string) {
 }
 
 async function travel(id: ZoneId, spawn: string) {
+  const previous = overworld.currentZone;
   overworld.lock();
-  await fadeThrough(() => toZone(id, spawn));
-  await zoneTitle(ZONES[id].name);
-  await arrive(id);
+  try {
+    await fadeThrough(() => toZone(id, spawn));
+    await zoneTitle(ZONES[id].name);
+    await arrive(id);
+  } catch (error) {
+    console.error(`Travel to ${id} failed`, error);
+    document.querySelector<HTMLElement>(".fade")?.classList.remove("on");
+    try {
+      // `toZone` clears the failed scene before building. Rebuild the last
+      // known-good zone so a Safari/WebGL hiccup does not strand the player in
+      // a locked, empty canvas.
+      if (previous && ZONES[previous]) await toZone(previous, "start");
+      overworld.unlock();
+    } catch (recoveryError) {
+      console.error("Travel recovery failed", recoveryError);
+      overworld.unlock();
+      showTravelFailure(() => void travel(id, spawn));
+    }
+  }
 }
 
 /** First steps into a zone. Bukit Bintang: everyone running from Bowat's clouds. Tasik Lily: lilies everywhere. Putrajaya: Qish remembers she hasn't

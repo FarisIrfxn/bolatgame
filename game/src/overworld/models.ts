@@ -82,7 +82,15 @@ export async function preloadModels() {
           const m = o as THREE.Mesh;
           if (!m.isMesh) return;
           dequantize(m.geometry);
-          m.material = flatten(m.material as THREE.MeshStandardMaterial);
+          // `model()` deliberately clones Object3D hierarchies shallowly so many
+          // copies stay cheap. Mark the underlying GPU resources as belonging to
+          // this cache; zone teardown and static merging must not dispose them.
+          m.geometry.userData.shared = true;
+          const materialValue = m.material as THREE.Material | THREE.Material[];
+          const wasArray = Array.isArray(materialValue);
+          const materials: THREE.Material[] = wasArray ? materialValue : [materialValue];
+          const flattened = materials.map((material) => flatten(material as THREE.MeshStandardMaterial));
+          m.material = wasArray ? flattened : flattened[0];
         });
         cache.set(id, gltf.scene);
       } catch (err) {
@@ -100,6 +108,7 @@ function flatten(src: THREE.MeshStandardMaterial) {
   const map = src.map;
   if (map) map.userData.shared = true;
   const m = new THREE.MeshLambertMaterial({ map, side: THREE.DoubleSide, emissive: 0xffffff, emissiveMap: map, emissiveIntensity: 0.22 });
+  m.userData.shared = true;
   src.dispose();
   return m;
 }

@@ -97,7 +97,7 @@ export class MegaBowatFlappy extends Phaser.Scene {
     const assist = this.fails > 0;
     const gap = assist ? 330 : 270;
     const gapY = Phaser.Math.Between(170 + gap / 2 - 100, H - 80 - gap / 2);
-    const x = W + 80;
+    const x = W + (this.data.get("widePad") ?? 0) + 100;
     const top = this.pot(x, gapY - gap / 2, gapY - gap / 2, true);
     const bottom = this.pot(x, gapY + gap / 2, H - 40 - (gapY + gap / 2), false);
     const cookie = this.add.container(x, gapY, [this.add.image(0, 0, "cookie").setDisplaySize(56, 56)]);
@@ -234,7 +234,7 @@ export class MegaBowatFlappy extends Phaser.Scene {
       }
       // Hit a pot: inside the column horizontally and outside the gap vertically.
       if (this.touchesPot(c)) this.bump();
-      if (c.x < -120) {
+      if (c.x < -(this.data.get("widePad") ?? 0) - 120) {
         c.top.destroy();
         c.bottom.destroy();
         c.cookie?.destroy();

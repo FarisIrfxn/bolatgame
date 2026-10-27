@@ -50,9 +50,13 @@ const SPEED = 5.2;
 const PLAYER_R = 0.42;
 const PICKUP_R = 1.0;
 const CAM_OFFSET = new THREE.Vector3(0, 19, 17.5);
+const TOUCH_DEVICE = typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
 
 export class Overworld {
-  private renderer = new THREE.WebGLRenderer({ antialias: true });
+  // MSAA plus two full-screen blur passes is disproportionately expensive on
+  // iOS WebGL. The desktop path keeps the original look; touch devices use the
+  // cheaper path so a world transition does not push Safari over its GPU limit.
+  private renderer = new THREE.WebGLRenderer({ antialias: !TOUCH_DEVICE });
   private scene = new THREE.Scene();
   private camera = new THREE.PerspectiveCamera(34, 1, 0.5, 200);
   private post!: ReturnType<typeof makeComposer>;
@@ -88,6 +92,7 @@ export class Overworld {
   private scenicK = 0;
   private camOffset = new THREE.Vector3();
   private bubble = el("div", "prompt-bubble");
+  private webglWarning = el("div", "webgl-warning", "<strong>Paparan 3D terhenti sekejap.</strong><span>Safari sedang pulihkan grafik. Tunggu sekejap atau refresh; progress awak dah disimpan.</span>");
   private stopLoop: (() => void) | null = null;
   /** An interaction or exit prompt is running. */
   private busy = false;
@@ -101,7 +106,22 @@ export class Overworld {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.16;
-    this.post = makeComposer(this.renderer, this.scene, this.camera);
+    this.post = makeComposer(this.renderer, this.scene, this.camera, { lowPower: TOUCH_DEVICE });
+    this.webglWarning.hidden = true;
+    ui().appendChild(this.webglWarning);
+    this.renderer.domElement.addEventListener("webglcontextlost", (event) => {
+      // Safari may reset a WebGL context under memory/GPU pressure. Prevent the
+      // browser's default teardown and tell the player what happened instead of
+      // leaving a black canvas that looks like a broken save.
+      event.preventDefault();
+      this.webglWarning.hidden = false;
+      console.warn("WebGL context lost; waiting for browser restoration");
+    });
+    this.renderer.domElement.addEventListener("webglcontextrestored", () => {
+      this.renderer.resetState();
+      this.webglWarning.hidden = true;
+      console.info("WebGL context restored");
+    });
     this.ready = this.init();
     window.addEventListener("gameviewportresize", () => this.resize());
   }
@@ -236,13 +256,13 @@ export class Overworld {
     if (bg?.isTexture) bg.dispose();
     this.zoneRoot.traverse((o) => {
       const m = o as THREE.Mesh;
-      if (m.geometry) m.geometry.dispose();
+      if (m.geometry && !m.geometry.userData.shared) m.geometry.dispose();
       const mats = m.material ? (Array.isArray(m.material) ? m.material : [m.material]) : [];
       for (const mat of mats) {
         // Character and card textures are cached and shared across zones; free everything else.
         const map = (mat as THREE.MeshBasicMaterial).map;
         if (map && !map.userData.shared) map.dispose();
-        mat.dispose();
+        if (!mat.userData.shared) mat.dispose();
       }
     });
     this.zoneRoot.clear();
@@ -332,6 +352,7 @@ export class Overworld {
     this.stopLoop = null;
     this.renderer.domElement.remove();
     this.bubble.remove();
+    this.webglWarning.hidden = true;
   }
 
   /** Turn Qish without moving her (posing for a picture). */
@@ -368,7 +389,7 @@ export class Overworld {
     const fov = this.zone?.planet?.fov ?? [34, 48];
     this.camera.fov = w / h < 1 ? fov[1] : fov[0];
     this.camera.updateProjectionMatrix();
-    const screenDpr = navigator.maxTouchPoints > 0 ? Math.min(1.5, window.devicePixelRatio) : window.devicePixelRatio;
+    const screenDpr = TOUCH_DEVICE ? Math.min(1.25, window.devicePixelRatio) : window.devicePixelRatio;
     this.renderer.setPixelRatio(Math.min(2, screenDpr * scale));
     this.renderer.setSize(w, h);
     this.post.resize(w, h);

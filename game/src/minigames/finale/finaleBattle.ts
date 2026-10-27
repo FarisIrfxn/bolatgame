@@ -52,6 +52,7 @@ export class FinaleBattle extends Phaser.Scene {
   private dialoguePanel!: Phaser.GameObjects.Graphics;
   private sky!: Phaser.GameObjects.Graphics;
   private rain!: Phaser.GameObjects.Particles.ParticleEmitter;
+  private storm = 0;
   private fire!: Phaser.GameObjects.Particles.ParticleEmitter;
   private stunned = false;
   private mega = false;
@@ -108,6 +109,12 @@ export class FinaleBattle extends Phaser.Scene {
       alpha: 0.6,
       emitting: false,
     });
+    this.events.on("widearenaresize", () => {
+      const pad = this.data.get("widePad") ?? 0;
+      this.rain.setEmitterX({ min: -pad - 100, max: W + pad + 100 });
+      this.rain.setFrequency(8 * W / (W + pad * 2));
+      this.drawSky(this.storm);
+    });
 
     this.hud();
     this.input.on("pointerdown", () => (this.clicked = true));
@@ -133,7 +140,9 @@ export class FinaleBattle extends Phaser.Scene {
 
   /** 0 = sunset, 1 = storm. */
   private drawSky(storm: number) {
-    this.sky.clear().fillStyle(0x101a30, storm * 0.6).fillRect(0, 0, W, H);
+    this.storm = storm;
+    const pad = this.data.get("widePad") ?? 0;
+    this.sky.clear().fillStyle(0x101a30, storm * 0.6).fillRect(-pad, 0, W + pad * 2, H);
   }
 
   private drawField() {

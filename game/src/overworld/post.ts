@@ -10,6 +10,7 @@ export interface TiltShiftOptions {
   focus?: number;
   range?: number;
   amount?: number;
+  lowPower?: boolean;
 }
 
 const tiltShift = (dir: [number, number], o: TiltShiftOptions) => ({
@@ -71,15 +72,17 @@ export function makeComposer(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
   composer.addPass(new RenderPass(scene, camera));
   const h = new ShaderPass(tiltShift([1, 0], tilt));
   const v = new ShaderPass(tiltShift([0, 1], tilt));
-  composer.addPass(h);
-  composer.addPass(v);
+  if (!tilt.lowPower) {
+    composer.addPass(h);
+    composer.addPass(v);
+  }
   composer.addPass(new ShaderPass(grade));
   composer.addPass(new OutputPass());
   const resize = (w: number, hgt: number) => {
     composer.setPixelRatio(renderer.getPixelRatio());
     composer.setSize(w, hgt);
     const px = renderer.getPixelRatio();
-    for (const p of [h, v]) p.uniforms.resolution.value.set(w * px, hgt * px);
+    if (!tilt.lowPower) for (const p of [h, v]) p.uniforms.resolution.value.set(w * px, hgt * px);
   };
   return { composer, resize };
 }

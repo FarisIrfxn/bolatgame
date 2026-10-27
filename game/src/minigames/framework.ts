@@ -189,6 +189,27 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
       instance.scene.add(def.sceneKey!, def.scene!, false);
       const scene = instance.scene.getScene(def.sceneKey!);
       scene.events.once(Phaser.Scenes.Events.CREATE, () => {
+        if (["bowat", "megabowat", "finale"].includes(def.id)) {
+          // These scenes draw moving scenery/effects outside the original field.
+          // Expand the render window, keeping original world coordinates centred.
+          const fit = () => {
+            const wide = gameViewport.width / gameViewport.height > 1280 / 720 + .005;
+            const width = wide ? gameViewport.width : 1280;
+            const pad = (width - 1280) / 2;
+            instance.scale.resize(width, 720);
+            instance.canvas.style.cssText = wide
+              ? "position:absolute;inset:0;width:100%;height:100%"
+              : ARENA_STYLE;
+            scene.cameras.main.setSize(width, 720).setScroll(-pad, 0);
+            scene.physics.world.setBounds(0, 0, 1280, 720);
+            scene.data.set("widePad", pad);
+            scene.events.emit("widearenaresize");
+            instance.scale.refresh();
+          };
+          const resized = () => requestAnimationFrame(() => { if (game === instance) fit(); });
+          fit(); window.addEventListener("gameviewportresize", resized);
+          scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener("gameviewportresize", resized));
+        }
         styleIllustratedScene(scene);
         instance.events.once(Phaser.Core.Events.POST_RENDER, () => {
           instance.canvas.style.visibility = "visible";

@@ -84,7 +84,9 @@ function toToon(src: LitMaterial) {
     fog: src.fog,
   });
   m.name = src.name;
-  m.userData = src.userData;
+  // The source material may be shared by the preloaded GLB cache. The toon
+  // twin belongs to this zone and must be disposable when the zone goes away.
+  m.userData = { ...src.userData, shared: false };
   m.polygonOffset = src.polygonOffset;
   m.polygonOffsetFactor = src.polygonOffsetFactor;
   m.polygonOffsetUnits = src.polygonOffsetUnits;
@@ -101,7 +103,10 @@ export function toonify(root: THREE.Object3D) {
     let t = twins.get(mat);
     if (!t) {
       twins.set(mat, (t = toToon(mat as LitMaterial)));
-      mat.dispose();
+      // Generated GLB materials are shared by the preloaded model cache. The
+      // zone gets a toon twin, but the source must remain alive for the next
+      // world visit.
+      if (!mat.userData.shared) mat.dispose();
     }
     return t;
   };

@@ -85,6 +85,8 @@ export class BowatBeach extends Phaser.Scene {
     this.player = this.add.rectangle(200, GROUND_Y - 80, 56, 130, 0xff0000, 0) as never;
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
+    // The doodle is wider than its collision body; keep the whole sprite visible.
+    this.player.body.setBoundsRectangle(new Phaser.Geom.Rectangle(50, 0, W - 100, 720));
     this.player.body.setGravityY(1700);
     this.qish = this.add.image(0, 0, "qish_side").setOrigin(0.5, 1);
     this.qish.setScale(150 / this.qish.height);

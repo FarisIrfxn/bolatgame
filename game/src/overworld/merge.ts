@@ -64,8 +64,9 @@ export function mergeStatic(src: THREE.Group): THREE.Group {
   }
   const used = new Set([...buckets.values()].map((b) => b.mat));
   for (const m of merged) {
-    m.geometry.dispose();
-    if (!used.has(m.material as THREE.Material)) (m.material as THREE.Material).dispose();
+    if (!m.geometry.userData.shared) m.geometry.dispose();
+    const material = m.material as THREE.Material;
+    if (!used.has(material) && !material.userData.shared) material.dispose();
   }
   return out;
 }

@@ -2,6 +2,30 @@ import * as THREE from "three";
 import { toonRamp } from "./style";
 import { painted, type PaintedName } from "./textures";
 
+const FALLBACK_COLOUR: Record<PaintedName, [number, number, number]> = {
+  grass: [143, 196, 90], dirt: [187, 143, 91], planks: [164, 112, 73], bricks: [184, 105, 87],
+  rooftiles: [142, 106, 146], plaster: [251, 233, 207], tar: [141, 136, 147], foliage: [111, 176, 74],
+  water: [107, 190, 197], thatch: [205, 169, 111], tuft: [111, 176, 74], flowers: [255, 143, 184],
+  bilik_floor: [247, 220, 225], bilik_wood: [230, 205, 197], bb_pavers: [190, 139, 142],
+  putra_road: [183, 75, 78], airport_concrete: [176, 181, 187], circuit_concrete: [126, 134, 145],
+};
+const fallback = new Map<PaintedName, THREE.Texture>();
+
+function fallbackTexture(name: PaintedName) {
+  let t = fallback.get(name);
+  if (t) return t;
+  const [r, g, b] = FALLBACK_COLOUR[name];
+  t = new THREE.DataTexture(new Uint8Array([r, g, b, 255]), 1, 1, THREE.RGBAFormat);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.minFilter = t.magFilter = THREE.LinearFilter;
+  t.generateMipmaps = false;
+  t.userData.shared = true;
+  t.needsUpdate = true;
+  fallback.set(name, t);
+  return t;
+}
+
 // One ground surface that paints grass, dirt, tar and pavers together through a soft mask, so paths
 // and roads melt into the grass with ragged painted edges instead of sitting on it as hard slabs.
 // The mask is a canvas drawn in world units; red = dirt, green = tar, blue = pavers, black = grass.
@@ -125,13 +149,19 @@ export function splatGround(
   m.drawImage(raw, 0, 0);
   const maskTex = new THREE.CanvasTexture(mask);
   maskTex.colorSpace = THREE.NoColorSpace;
+  // Explicit filters matter on Safari: the default mipmap path can make the
+  // small mask shimmer or turn a narrow painted edge into a hard seam.
+  maskTex.minFilter = maskTex.magFilter = THREE.LinearFilter;
+  maskTex.generateMipmaps = false;
+  maskTex.needsUpdate = true;
 
   const tex = (k: SplatLayer | "grass") => {
-    const t = painted((k !== "grass" && layerTextures[k]) || TEXTURE[k], 1, 1, 1);
+    const name = (k !== "grass" && layerTextures[k]) || TEXTURE[k];
+    const t = painted(name, 1, 1, 1) ?? fallbackTexture(name);
     if (t) t.repeat.set(1, 1);
     return t;
   };
-  const grass = painted(base, 1, 1, 1);
+  const grass = painted(base, 1, 1, 1) ?? fallbackTexture(base);
   if (grass) grass.repeat.set(1, 1);
   const mat = new THREE.MeshToonMaterial({ map: grass, gradientMap: toonRamp, color: grass ? 0xffffff : 0x86b95a });
   mat.userData.keepShading = true;
