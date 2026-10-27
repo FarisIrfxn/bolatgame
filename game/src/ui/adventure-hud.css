@@ -1,7 +1,7 @@
 /* Game HUD: location ribbon, a ring of card medals, a dedicated objective at the right. */
 .zone-label {
-  top:max(24px,env(safe-area-inset-top));left:22px;right:auto;
-  min-width:156px;max-width:min(330px,calc(100vw - 290px));padding:10px 17px 11px 11px;
+  top:max(24px,var(--game-safe-top, env(safe-area-inset-top)));left:22px;right:auto;
+  min-width:156px;max-width:min(330px,calc(100cqw - 290px));padding:10px 17px 11px 11px;
   border:2px solid #bf809d;border-radius:16px 24px 24px 16px;
   background:linear-gradient(#fff9ea,#faead9);box-shadow:0 4px 0 #ce9bb0,0 7px 14px #70465724;
   gap:10px;
@@ -36,8 +36,8 @@
 .hud .slot img { width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 1px 0 #fff6); }
 .hud .slot span { font:900 .7rem var(--font-body); }
 .collect-hud:not(.workout-hud) {
-  left:auto;right:max(22px,env(safe-area-inset-right));top:max(24px,env(safe-area-inset-top));
-  width:284px;min-width:0;max-width:calc(100vw - 205px);padding:12px 14px 13px 11px;gap:10px;
+  left:auto;right:max(22px,var(--game-safe-right, env(safe-area-inset-right)));top:max(24px,var(--game-safe-top, env(safe-area-inset-top)));
+  width:284px;min-width:0;max-width:calc(100cqw - 205px);padding:12px 14px 13px 11px;gap:10px;
   border:2px solid #c48aa5;border-left:5px solid #d389ac;border-radius:17px 12px 17px 12px;
   background:linear-gradient(130deg,#fffaf0,#f9eadc);box-shadow:0 4px 0 #cda3b5,0 8px 17px #70465724;
 }
@@ -55,53 +55,53 @@
 .collect-check { position:absolute;right:-5px;bottom:-5px;display:grid;place-items:center;width:19px;height:19px;border-radius:50%;border:2px solid #fff9eb;background:#86a76d;color:white;font:900 11px var(--font-body);box-shadow:0 2px 0 #66865e; }
 .collect-hud.done:not(.workout-hud) { border-left-color:#8eac78;background:linear-gradient(130deg,#fffdf0,#f0f1df); }
 .collect-hud.done .collect-line b { background:#e4ebd6;color:#6f8b5b; }
-.workout-hud { top:max(24px,env(safe-area-inset-top));right:22px;max-width:calc(100vw - 205px); }
+.workout-hud { top:max(24px,var(--game-safe-top, env(safe-area-inset-top)));right:22px;max-width:calc(100cqw - 205px); }
 
 /* Title: just a logo, Press Start, and Bolat and Bowat chasing on a quiet grassy path. */
 .title-screen { background:#f4d4e1;overflow:hidden;place-items:start center; }
 .title-screen::before { display:none; }
 .title-landscape { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1; }
-.title-inner { position:relative;width:min(600px,88vw);margin:0;padding:5vh 0 0;z-index:2; }
+.title-inner { position:relative;width:min(600px,88cqw);margin:0;padding:5cqh 0 0;z-index:2; }
 .title-screen .logo { width:100%; }
-.title-screen .logo img { max-height:38vh;filter:drop-shadow(0 6px 3px #9e628623); }
+.title-screen .logo img { max-height:38cqh;filter:drop-shadow(0 6px 3px #9e628623); }
 .title-screen .press {
   display:block;min-width:0;width:auto;margin:24px 0 0;padding:7px 18px;
   background:none;border:0;outline:0;border-radius:0;box-shadow:none;
-  font:400 clamp(1.45rem,2.6vw,2rem)/1.3 var(--font-title);letter-spacing:.03em;
+  font:400 clamp(1.45rem,2.6cqw,2rem)/1.3 var(--font-title);letter-spacing:.03em;
   color:#a95380;text-shadow:0 2px 0 #fff2dc;animation:start-breathe 2.5s ease-in-out infinite;
 }
 .title-screen .press:hover { color:#8e3564;translate:0 -2px; }
 .title-screen .press:focus-visible { outline:2px solid #c580a4;border-radius:12px;outline-offset:3px; }
-.title-menu { margin-top:20px;max-height:28vh; }
-.title-runner { position:absolute;bottom:17%;height:clamp(100px,19vh,170px);width:160px;transform:translateX(-50%);pointer-events:none;z-index:1;display:flex;justify-content:center;align-items:end; }
+.title-menu { margin-top:20px;max-height:28cqh; }
+.title-runner { position:absolute;bottom:17%;height:clamp(100px,19cqh,170px);width:160px;transform:translateX(-50%);pointer-events:none;z-index:1;display:flex;justify-content:center;align-items:end; }
 .title-runner::before { content:'';position:absolute;bottom:-3px;left:27%;right:27%;height:10px;background:#795c5633;border-radius:50%;filter:blur(3px); }
 .title-runner img { display:block;height:100%;width:auto;max-width:100%;object-fit:contain;filter:drop-shadow(2px 0 #fffbf0) drop-shadow(-2px 0 #fffbf0) drop-shadow(0 2px #fffbf0) drop-shadow(0 -2px #fffbf0); }
-.title-runner.bowat { height:clamp(85px,16vh,145px);bottom:16%; }
+.title-runner.bowat { height:clamp(85px,16cqh,145px);bottom:16%; }
 .runner-walker { filter:drop-shadow(2px 0 #fffdf6) drop-shadow(-2px 0 #fffdf6) drop-shadow(0 2px #fffdf6) drop-shadow(0 -2px #fffdf6); }
 @keyframes start-breathe { 50% { opacity:.6; } }
-@media(max-width:600px) {
-  .zone-label { top:max(18px,env(safe-area-inset-top));left:12px;min-width:0;max-width:calc(100vw - 218px);padding:9px 12px 10px 9px;gap:7px;border-radius:14px 20px 20px 14px; }
+@container game (max-width:600px) {
+  .zone-label { top:max(18px,var(--game-safe-top, env(safe-area-inset-top)));left:12px;min-width:0;max-width:calc(100cqw - 218px);padding:9px 12px 10px 9px;gap:7px;border-radius:14px 20px 20px 14px; }
   .zone-pin { display:grid;width:25px;height:29px;flex-shrink:0; }.zone-pin svg { width:14px;height:18px; }
   .zone-label strong { font-size:1rem; }.zone-detail { font-size:.55rem; }
   .hud { left:10px;top:112px;width:136px;height:136px; }.hud .slot { width:29px;height:29px; }.hud-heading b { font-size:1.15rem; }.hud-heading b small { font-size:.62rem; }.hud-heading>span { font-size:.42rem; }.hud .slot span { font-size:.61rem; }
-  .collect-hud:not(.workout-hud) { top:max(18px,env(safe-area-inset-top));right:12px;width:184px;max-width:calc(100vw - 175px);padding:9px 9px 10px 7px;gap:7px;border-left-width:4px;border-radius:14px 10px 14px 10px; }
+  .collect-hud:not(.workout-hud) { top:max(18px,var(--game-safe-top, env(safe-area-inset-top)));right:12px;width:184px;max-width:calc(100cqw - 175px);padding:9px 9px 10px 7px;gap:7px;border-left-width:4px;border-radius:14px 10px 14px 10px; }
   .collect-icon { width:30px;height:34px;border-radius:10px; }.collect-hud img { width:29px;height:29px; }
   .collect-top { gap:4px;margin-bottom:4px; }.collect-top small { font-size:.37rem;letter-spacing:.07em; }.collect-status { font-size:.45rem; }
   .collect-line { font-size:.72rem;gap:5px; }.collect-line b { font-size:.7rem;padding:2px 4px; }.collect-line em { font-size:.52rem; }.collect-check { width:16px;height:16px;font-size:9px; }
   .collect-track { margin-top:7px;height:5px; }
-  .workout-hud { top:max(18px,env(safe-area-inset-top));right:12px;max-width:calc(100vw - 175px);min-width:0; }
-  .title-inner { width:90vw;padding:9vh 0 0;margin:0; }.title-screen .logo img { max-height:32vh; }
+  .workout-hud { top:max(18px,var(--game-safe-top, env(safe-area-inset-top)));right:12px;max-width:calc(100cqw - 175px);min-width:0; }
+  .title-inner { width:90cqw;padding:9cqh 0 0;margin:0; }.title-screen .logo img { max-height:32cqh; }
   .title-screen .press { min-width:0;width:auto;font-size:1.6rem;margin-top:25px;padding:6px 18px; }
-  .title-runner { width:110px;height:clamp(100px,17vh,150px); }.title-runner.bowat { height:clamp(85px,14.5vh,127px); }
+  .title-runner { width:110px;height:clamp(100px,17cqh,150px); }.title-runner.bowat { height:clamp(85px,14.5cqh,127px); }
 }
-@media(max-height:500px) and (orientation:landscape) {
-  .title-inner { padding-top:2vh;width:330px; }.title-screen .logo img { max-height:37vh; }.title-screen .press { margin-top:6px;font-size:1.1rem; }
-  .title-menu { margin-top:8px;max-height:31vh; }.tm-btn { font-size:.8rem;padding:6px 14px; }
+@container game (max-height:500px) and (orientation:landscape) {
+  .title-inner { padding-top:2cqh;width:330px; }.title-screen .logo img { max-height:37cqh; }.title-screen .press { margin-top:6px;font-size:1.1rem; }
+  .title-menu { margin-top:8px;max-height:31cqh; }.tm-btn { font-size:.8rem;padding:6px 14px; }
   .title-runner { height:100px;width:120px; }.title-runner.bowat { height:85px; }
   .hud { width:126px;height:126px;top:105px; }.hud .slot { width:28px;height:28px; }.hud-heading b { font-size:1.15rem; }
 }
-@media(max-width:360px) {
-  .zone-label { max-width:calc(100vw - 186px); }
+@container game (max-width:360px) {
+  .zone-label { max-width:calc(100cqw - 186px); }
   .zone-pin { display:none; }
   .hud { width:124px;height:124px; }
   .hud .slot { width:27px;height:27px; }

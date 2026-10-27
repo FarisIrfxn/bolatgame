@@ -43,7 +43,7 @@ export function createQishRunner(host: HTMLElement, ctx: MinigameCtx): CustomMin
     const w = host.clientWidth, h = host.clientHeight;
     scale = Math.min(w / W, h / H); left = (w - W * scale) / 2; top = (h - H * scale) / 2;
   };
-  resize(); window.addEventListener("resize", resize);
+  resize(); window.addEventListener("gameviewportresize", resize);
   let ready = false, destroyed = false, endingTimer = 0;
   let road: ReturnType<typeof runnerRoad>;
   let roadDistance = 0;
@@ -192,7 +192,7 @@ export function createQishRunner(host: HTMLElement, ctx: MinigameCtx): CustomMin
     destroy() {
       destroyed = true; off(); window.clearTimeout(endingTimer);
       canvas.removeEventListener("pointerdown", onTap); canvas.remove(); foreground.remove(); hud.remove();
-      window.removeEventListener("resize", resize); walkers.forEach(img => img.remove());
+      window.removeEventListener("gameviewportresize", resize); walkers.forEach(img => img.remove());
       if (import.meta.env.DEV) delete (window as unknown as Record<string, unknown>).__qishRunner;
     },
   };

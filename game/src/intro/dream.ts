@@ -63,12 +63,13 @@ async function act(root: HTMLElement, kind: "pinch" | "sulk" | "leave" | "cry") 
     // The square art is centred inside the img box (object-fit: contain): place the tears on her eyes.
     const s = scene.getBoundingClientRect();
     const q = qish.getBoundingClientRect();
+    const scale = s.width / scene.offsetWidth;
     const side = Math.min(q.width, q.height);
     const ax = q.left + (q.width - side) / 2 - s.left;
     const ay = q.top + (q.height - side) / 2 - s.top;
     for (const [cls, fx, fy] of [["l", 0.52, 0.42], ["r", 0.74, 0.4]] as const) {
       const t = el("div", `tears ${cls}`, Array.from({ length: 6 }, (_, i) => `<b style="--i:${i}"></b>`).join(""));
-      Object.assign(t.style, { left: `${ax + fx * side}px`, top: `${ay + fy * side}px`, right: "auto", bottom: "auto" });
+      Object.assign(t.style, { left: `${(ax + fx * side) / scale}px`, top: `${(ay + fy * side) / scale}px`, right: "auto", bottom: "auto" });
       scene.appendChild(t);
     }
     sfx.hurt();

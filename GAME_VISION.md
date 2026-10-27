@@ -1839,3 +1839,27 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
   mic pending/deny/allow/setup-fail/cancel lulus tanpa page error. Simulasi browser, bukan
   ujian mic/controller/phone fizikal. Bukti: `art/startup-mic-2026-10-27/qa/`,
   `docs/startup-mic-audit.json`. Pemulihan save rosak masih kerja berasingan.
+
+
+### Fon landscape: satu komposisi desktop (2026-10-27)
+
+- Faris mahu fon rotate landscape mempunyai UI/HUD yang sama seperti desktop.
+  Permukaan game kini 1280×720 dengan skala sekata untuk semua landscape, dari
+  loading/title hingga dunia, lapan boss dan ending. Nisbah skrin berbeza mendapat
+  bingkai; notch/home indicator dikecualikan. Portrait kekal responsif.
+- CSS memakai ukuran/breakpoint container game; kamera dan prompt memakai koordinat
+  logik yang sama. Resolusi renderer/postprocessing mengikut paparan × DPR dengan had.
+  Joystick/A/B berasingan dalam piksel fizikal, dengan target sekurang-kurangnya 48px
+  pada landscape pendek. Grid memory 568×320 tidak ditutup kawalan.
+- Phaser tidak lagi double-scale. Bounds sentuhan diselaraskan selepas putaran dan
+  sebelum touch bermula; audit menemui koordinat orientasi lama dan mengesahkan
+  pembetulannya. Runner juga diuji tap tiga lorong selepas rotate. Air mata mimpi
+  mengambil kira skala; kawalan disembunyikan sepanjang mimpi.
+- TypeScript/Vite lulus. Lapan saiz desktop/landscape/tablet dibanding dengan desktop;
+  tambahan portrait 390×844/320×568 untuk panel bersama. Semua lapan boss, peta, dialog,
+  reveal, phone, senaman, mimpi dan ending lulus. Ending sebenar selesai dengan touch
+  kek semasa mic pending, surat, kad 9 dan butang Tamat. Production 5180 pada DPR 3
+  serta byte JS/CSS sepadan build lulus tanpa page error.
+- Bukti/laporan dan skrip: `art/mobile-landscape-2026-10-27/README.md`,
+  `pipeline/audit/mobile-landscape*.mjs`, `docs/UI_QC.md`. Emulasi Chromium;
+  fon fizikal, Safari dan prestasi/FPS peranti belum diuji dalam pas ini.

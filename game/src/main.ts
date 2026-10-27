@@ -5,6 +5,7 @@ import "./ui/paper.css";
 import "./ui/adventure-hud.css";
 import "./ui/navigation.css";
 import "./ui/qc.css";
+import "./core/viewport";
 import "./ui/controlHints";
 import { input } from "./core/input";
 import { onFrame, startLoop, waitFor } from "./core/loop";

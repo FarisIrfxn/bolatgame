@@ -1,5 +1,5 @@
 import { input, type Button } from "../core/input";
-import { el, ui } from "./dom";
+import { el } from "./dom";
 
 /** On-screen joystick + A/B buttons, shown only on touch devices. */
 export function mountTouchControls() {
@@ -23,7 +23,8 @@ export function mountTouchControls() {
       dx /= len;
       dy /= len;
     }
-    knob.style.transform = `translate(${dx * 40}px, ${dy * 40}px)`;
+    const travel = (stick.clientWidth - knob.offsetWidth) / 2;
+    knob.style.transform = `translate(${dx * travel}px, ${dy * travel}px)`;
     input.setTouchAxis(Math.abs(dx) > 0.2 ? dx : 0, Math.abs(dy) > 0.2 ? dy : 0);
   };
   stick.addEventListener("pointerdown", (e) => {
@@ -60,5 +61,6 @@ export function mountTouchControls() {
   button("a", "btn-a", "A");
   button("b", "btn-b", "B");
 
-  ui().appendChild(root);
+  // Finger targets stay in physical CSS pixels while the game scales uniformly.
+  document.getElementById("touch-ui")!.appendChild(root);
 }

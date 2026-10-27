@@ -6,29 +6,29 @@
   --font-body: "Nunito", "Segoe UI", system-ui, sans-serif;
   --ink: #59465d; --paper: #fffaf0; --gold: #f3ca79;
 }
-.dialog { bottom: max(24px, env(safe-area-inset-bottom)); width: min(900px, calc(100% - 40px)); font-family: var(--font-body); font-size: 16px; }
+.dialog { bottom: max(24px, var(--game-safe-bottom, env(safe-area-inset-bottom))); width: min(900px, calc(100% - 40px)); font-family: var(--font-body); font-size: 16px; }
 .dialog .box { background: #fffaf3f7; color: #604d62; border: 1px solid #fff; border-radius: 23px; padding: 21px 28px 44px; min-height: 128px; box-shadow: 0 5px 0 #b795ad55, 0 14px 36px #4d34452b; }
 .dialog .box::before { content: ''; position: absolute; inset: 7px; border: 1px solid #ead8e2; border-radius: 17px; pointer-events: none; }
 .dialog .name { top: -16px; left: 25px; background: #cf83a1; color: #fffaf0; border: 2px solid #fff7ee; border-radius: 12px 12px 12px 4px; padding: 5px 19px; font: 900 .85rem var(--font-body); box-shadow: 0 3px 8px #59465d17; }
 .dialog .box.right .name { right: 25px; border-radius: 12px 12px 4px 12px; }
-.dialog .text { font-size: clamp(1rem, 2.3vw, 1.24rem); color: #604d62; font-weight: 700; line-height: 1.6; margin-top: 0; white-space: pre-wrap; overflow-wrap: anywhere; max-height: min(36dvh, 12rem); overflow: hidden; }
+.dialog .text { font-size: clamp(1rem, 2.3cqw, 1.24rem); color: #604d62; font-weight: 700; line-height: 1.6; margin-top: 0; white-space: pre-wrap; overflow-wrap: anywhere; max-height: min(36cqh, 12rem); overflow: hidden; }
 .dialog .next { display: flex; gap: 6px; align-items: center; bottom: 13px; right: 22px; font: 800 .61rem var(--font-body); color: #aa7a98; animation: none; }
 .dialog .next kbd { font-size: .65rem; background: #f4e5ec; padding: 1px 5px; border-radius: 4px; }
 .dialog .next > span { animation: dialogue-next 1.4s ease-in-out infinite; }
 .dialog .choice { background: #fff; border: 1px solid #e2cbd9; border-radius: 11px; color: var(--ink); padding: 9px 17px; font-size: .9rem; position: relative; }
 .dialog .choice.sel { background: #cf83a1; border-color: #b56c90; color: #fff; box-shadow: 0 3px 0 #a96587; }
-.dialog .choices { max-height: 35vh; overflow-y: auto; padding-bottom: 4px; }
+.dialog .choices { max-height: 35cqh; overflow-y: auto; padding-bottom: 4px; }
 .vn-fig { image-rendering: auto; }
 .vn-fig.dim { filter: brightness(.65) saturate(.55) drop-shadow(0 6px 0 #59465d20); }
 @keyframes dialogue-next { 50% { translate: 3px 0; } }
-@media (max-width: 600px) {
-  .dialog { width: calc(100% - 24px); bottom: max(14px, env(safe-area-inset-bottom)); }
+@container game (max-width: 600px) {
+  .dialog { width: calc(100% - 24px); bottom: max(14px, var(--game-safe-bottom, env(safe-area-inset-bottom))); }
   .dialog .box { padding: 23px 18px 42px; min-height: 120px; border-radius: 19px; }
   .dialog .text { font-size: 1rem; line-height: 1.5; }
   .dialog .name { left: 16px; font-size: .78rem; }
   .vn-stage { bottom: 125px; }
 }
-@media (max-height: 500px) and (orientation: landscape) {
+@container game (max-height: 500px) and (orientation: landscape) {
   .dialog .box { padding: 15px 22px 38px; min-height: 94px; }
   .dialog .text { font-size: 1rem; }
 }

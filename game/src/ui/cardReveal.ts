@@ -39,8 +39,8 @@ export async function revealCard(n: number) {
 
   cardEl.animate(
     [
-      { transform: "translateY(60vh) rotateZ(-25deg) scale(.4)" },
-      { transform: "translateY(-4vh) rotateZ(4deg) scale(1.05)" },
+      { transform: "translateY(60cqh) rotateZ(-25deg) scale(.4)" },
+      { transform: "translateY(-4cqh) rotateZ(4deg) scale(1.05)" },
       { transform: "translateY(0) rotateZ(0) scale(1)" },
     ],
     { duration: 900, easing: "cubic-bezier(.2,1.2,.4,1)" },

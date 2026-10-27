@@ -53,6 +53,12 @@ const SKIP_AFTER = 3;
 let game: Phaser.Game | null = null;
 let customGame: CustomMinigame | null = null;
 let current: { def: MinigameDef; ctx: MinigameCtx } | null = null;
+// Bounds are physical (for touch), while the canvas CSS size is logical.
+window.addEventListener("gameviewportresize", () => {
+  // Container-query layout finishes after the viewport styles change. Measuring
+  // immediately can retain the previous orientation's touch bounds.
+  requestAnimationFrame(() => game?.scale.refresh());
+});
 
 async function introCard(def: MinigameDef, host: HTMLElement, onReady?: () => void) {
   const art = bossArt(def.id);
@@ -144,7 +150,10 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
       roundPixels: false,
       antialias: true,
       transparent: true,
-      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+      // The shared viewport already scales landscape. FIT measures the transformed
+      // parent and would shrink the arena a second time on phones.
+      scale: { mode: Phaser.Scale.NONE, autoCenter: Phaser.Scale.NO_CENTER },
+      canvasStyle: "position:absolute;left:0;top:50%;width:100% !important;height:auto !important;transform:translateY(-50%)",
       physics: { default: "arcade", arcade: { gravity: { x: 0, y: 0 } } },
       input: { keyboard: false, gamepad: false },
       audio: { noAudio: true },
@@ -154,6 +163,19 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
     // SceneManager queues additions until READY; getScene would still be null before boot.
     instance.events.once(Phaser.Core.Events.READY, () => {
       if (game !== instance) return;
+      // CSS transforms can change the displayed bounds without changing the
+      // canvas's logical size. Phaser's parent-size polling misses that case.
+      const refreshBounds = () => {
+        const r = instance.canvas.getBoundingClientRect();
+        const { canvasBounds: b, displayScale, baseSize } = instance.scale;
+        if (r.width && r.height && (Math.abs(r.x - b.x) > .01 || Math.abs(r.y - b.y) > .01 ||
+          Math.abs(r.width - b.width) > .01 || Math.abs(r.height - b.height) > .01 ||
+          Math.abs(displayScale.x - baseSize.width / r.width) > .00001 ||
+          Math.abs(displayScale.y - baseSize.height / r.height) > .00001)) instance.scale.refresh();
+      };
+      instance.events.on(Phaser.Core.Events.PRE_STEP, refreshBounds);
+      instance.canvas.addEventListener("touchstart", refreshBounds, { capture: true, passive: true });
+      instance.canvas.addEventListener("mousedown", refreshBounds, { capture: true });
       instance.canvas.style.visibility = "hidden";
       instance.scene.add(def.sceneKey!, def.scene!, false);
       const scene = instance.scene.getScene(def.sceneKey!);

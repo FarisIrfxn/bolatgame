@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { input } from "../core/input";
+import { gameViewport } from "../core/viewport";
 import { onFrame } from "../core/loop";
 import { save } from "../core/save";
 import { dialogOpen } from "../ui/dialog";
@@ -102,7 +103,7 @@ export class Overworld {
     this.renderer.toneMappingExposure = 1.16;
     this.post = makeComposer(this.renderer, this.scene, this.camera);
     this.ready = this.init();
-    window.addEventListener("resize", () => this.resize());
+    window.addEventListener("gameviewportresize", () => this.resize());
   }
 
   private async init() {
@@ -360,13 +361,13 @@ export class Overworld {
   }
 
   private resize() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    const { width: w, height: h, scale } = gameViewport;
     this.camera.aspect = w / h;
     // Keep similar horizontal coverage on tall phone screens.
     const fov = this.zone?.planet?.fov ?? [34, 48];
     this.camera.fov = w / h < 1 ? fov[1] : fov[0];
     this.camera.updateProjectionMatrix();
+    this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio * scale));
     this.renderer.setSize(w, h);
     this.post.resize(w, h);
   }
@@ -551,8 +552,8 @@ export class Overworld {
     const v = it.pos.clone();
     v.y = it.top;
     planet.bend(v).project(this.camera);
-    this.bubble.style.left = `${((v.x + 1) / 2) * window.innerWidth}px`;
-    this.bubble.style.top = `${((1 - v.y) / 2) * window.innerHeight}px`;
+    this.bubble.style.left = `${((v.x + 1) / 2) * gameViewport.width}px`;
+    this.bubble.style.top = `${((1 - v.y) / 2) * gameViewport.height}px`;
     const content = `<kbd data-control="a">${input.label("a")}</kbd>${it.label}`;
     // Preserve the live keycap across frames; rebuilding it also reset controller labels.
     if (this.bubble.innerHTML !== content) this.bubble.innerHTML = content;

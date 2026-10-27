@@ -1,5 +1,6 @@
 import "./style.css";
 import "./ui/loading.css";
+import "./core/viewport";
 import { createAssetDownload } from "./core/preload";
 
 const root = document.createElement("div");

@@ -1,5 +1,39 @@
 # QC UI & HUD The Adventure of Qish
 
+## Mobile landscape sama komposisi desktop (2026-10-27)
+
+Permintaan Faris: main di fon yang dipusing landscape mesti mengekalkan rupa desktop.
+Sebelum pas ini, breakpoint skrin pendek mengubah saiz HUD/title/dialog, manakala kamera
+mengikut aspect ratio fon. Sekarang seluruh landscape memakai satu permukaan **1280×720**
+yang diskala sekata. Ruang lebih pada skrin lebar/4:3 menjadi bingkai; gambar tidak diregang
+atau dipotong. Kawasan notch/home indicator dikecualikan sebelum skala dikira.
+
+- `core/viewport.ts` menyelaraskan saiz semasa loading, title, overworld, boss dan ending.
+  `cqw/cqh` serta size container queries menggunakan permukaan game yang sama; portrait
+  mengekalkan layout responsif. Auto pembesaran teks browser dimatikan.
+- Kamera dan prompt dunia memakai koordinat game. Resolusi Three.js/postprocessing
+  mengikut saiz paparan × DPR dengan had sedia ada, supaya skrin kecil tidak merender
+  seluruh framebuffer desktop pada DPR penuh secara berlebihan.
+- Phaser tidak lagi menskala dua kali. Bounds input diselaraskan dengan canvas sebenar
+  selepas rotate, termasuk sebelum touch bermula. Runner menggunakan bounds sebenar juga.
+- Joystick/A/B berada dalam lapisan fizikal berasingan; landscape pendek memakai joystick
+  96px, A 64px dan B 48px. Knob mengikut radius joystick. Grid memory 568×320 tidak ditutup
+  kawalan. Touch disembunyikan sepanjang mimpi; kedudukan air mata mengambil kira skala.
+- Title portrait 320px turut dikemaskan supaya kotak watak tidak melimpah tepi.
+
+Validasi lulus: TypeScript/Vite; 1280×720, 1600×900, 844×390, 667×375,
+568×320, 932×430, 740×280 dan 1024×768. Ukuran/font logik dibanding dengan desktop;
+semua lapan boss, peta, dialog, reveal, phone, senaman, mimpi dan ending disemak.
+Tap memory dan tiga lorong runner kekal tepat selepas rotate. Ending sebenar selesai
+menggunakan sentuhan pada kek semasa mic pending, surat, kad 9 dan butang Tamat;
+progress kekal disimpan. Port 5180 diuji pada DPR 3; JS/CSS sama byte dengan build.
+Tiada page error. Ini emulasi Chromium, **bukan ujian fon fizikal/Safari atau ukuran FPS**.
+
+Bukti: [folder screenshot dan laporan](../art/mobile-landscape-2026-10-27/README.md).
+Skrip: `pipeline/audit/mobile-landscape.mjs` (pilihan `--overlays` untuk bahagian overlay),
+`mobile-landscape-story.mjs` dan `mobile-landscape-production.mjs`.
+
+
 ## Semakan terbaru: latar dijana, kad sebenar, peta Myvi & banner boss
 
 Title menggunakan latar **ilustrasi 2D timbul yang dijana**, dengan langit pink dan jalan

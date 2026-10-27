@@ -18,7 +18,7 @@ let fadeEl: HTMLDivElement | null = null;
 export async function fadeThrough(mid: () => void | Promise<void>, white = false) {
   if (!fadeEl) {
     fadeEl = el("div", "fade");
-    document.body.appendChild(fadeEl);
+    document.getElementById("game-viewport")!.appendChild(fadeEl);
   }
   fadeEl.classList.toggle("white", white);
   fadeEl.classList.add("on");

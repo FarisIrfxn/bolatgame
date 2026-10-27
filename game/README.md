@@ -72,6 +72,23 @@ Butang ×, B atau Esc menutup kedua-dua paparan dan memulihkan kawalan overworld
 Komponen: `src/ui/travelMap.ts`, `bossSelect.ts`, `picker.ts`, `navigation.css`.
 Audit browser: `node pipeline/audit/navigation.mjs` dari root repo; `--small` untuk 320×568.
 
+## Paparan desktop dan fon landscape
+
+Landscape menggunakan permukaan logik 1280×720 yang diskala sekata, termasuk title,
+HUD, kamera, dialog, boss dan ending. Skrin berlainan nisbah mendapat bingkai; safe area
+notch/home indicator dikecualikan. Portrait menggunakan layout responsif sedia ada.
+`src/core/viewport.ts` mengurus saiz dan event `gameviewportresize`.
+
+CSS game menggunakan `cqw/cqh` dan `@container game` untuk ukuran/breakpoint, supaya
+UI merujuk permukaan logik yang sama. Kekalkan media query untuk pilihan pengguna
+seperti reduced motion. Joystick/A/B dalam `#touch-ui` menggunakan piksel skrin sebenar.
+Input canvas mesti mengukur `getBoundingClientRect()` sebenar selepas rotate.
+
+Audit: `node pipeline/audit/mobile-landscape.mjs`, `mobile-landscape-story.mjs` dan
+`mobile-landscape-production.mjs` dari root; screenshot/laporan dalam
+`art/mobile-landscape-2026-10-27/`. Ini emulasi browser; prestasi/perkakasan fon sebenar
+masih perlu disemak pada peranti.
+
 ## Kawalan
 
 | | Keyboard | Gamepad | Phone |

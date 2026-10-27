@@ -76,6 +76,7 @@ export function makeComposer(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
   composer.addPass(new ShaderPass(grade));
   composer.addPass(new OutputPass());
   const resize = (w: number, hgt: number) => {
+    composer.setPixelRatio(renderer.getPixelRatio());
     composer.setSize(w, hgt);
     const px = renderer.getPixelRatio();
     for (const p of [h, v]) p.uniforms.resolution.value.set(w * px, hgt * px);

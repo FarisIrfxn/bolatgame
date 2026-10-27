@@ -23,8 +23,13 @@
     />
   </head>
   <body>
-    <div id="stage"></div>
-    <div id="ui"></div>
+    <div id="game-shell">
+      <div id="game-viewport">
+        <div id="stage"></div>
+        <div id="ui"></div>
+      </div>
+    </div>
+    <div id="touch-ui"></div>
     <script type="module" src="/src/boot.ts"></script>
   </body>
 </html>
