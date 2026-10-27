@@ -46,8 +46,10 @@ export function createQishRunner(host: HTMLElement, ctx: MinigameCtx): CustomMin
     // narrower landscape screens crop only the outer edges. Keep the existing
     // centered 16:9 playfield in portrait.
     const fullBleed = ratio >= 1.4;
-    const w = fullBleed ? H * ratio : gameViewport.width;
-    const h = fullBleed ? H : gameViewport.height;
+    // DOM bounds are physical after #game-viewport's transform. Convert them
+    // back to the logical coordinates used by the runner and its DOM sprites.
+    const w = bounds.width > 0 ? bounds.width / gameViewport.scale : gameViewport.width;
+    const h = bounds.height > 0 ? bounds.height / gameViewport.scale : gameViewport.height;
     scale = fullBleed ? h / H : Math.min(w / W, h / H);
     left = (w - W * scale) / 2; top = (h - H * scale) / 2;
     span = fullBleed ? w / scale : W;

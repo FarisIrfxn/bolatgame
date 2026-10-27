@@ -2,7 +2,6 @@ import Phaser from "phaser";
 import { preloadStorybook, illustratedBackdrop, paperPanel, setPose, illustratedItem } from "../storybook";
 import { input } from "../../core/input";
 import { sfx } from "../../core/sfx";
-import { el } from "../../ui/dom";
 import type { MinigameCtx, MinigameSceneData } from "../framework";
 
 // Finale: Pokémon-style turn-based battle against Raja Nonchalant at Litar Sepang.
@@ -237,8 +236,7 @@ export class FinaleBattle extends Phaser.Scene {
   private async choose(options: { label: string; sub: string; glow?: boolean }[]) {
     // The A press that finishes the preceding line must not also pick a move.
     do { await this.nextFrame(); } while (input.down("a") && !this.forced);
-    this.text.setText("");
-    this.text.setVisible(false);
+    this.text.setText(options.length > 1 ? "Qish nak guna\nmove mana?" : "");
     const c = this.add.container(0, 0);
     const cols = options.length > 1 ? 2 : 1;
     const bw = options.length > 1 ? 375 : 520;
@@ -255,26 +253,10 @@ export class FinaleBattle extends Phaser.Scene {
     });
     let sel = 0;
     let picked = -1;
-    const touchMenu = el("div", `finale-choice-menu${options.length === 1 ? " single" : ""}`,
-      `<div class="finale-choice-heading">${options.length > 1 ? "Qish nak guna move mana?" : "Pilih aksi"}</div><div class="finale-choice-grid"></div>`);
-    const choiceGrid = touchMenu.querySelector<HTMLElement>(".finale-choice-grid")!;
-    options.forEach((option, i) => {
-      const button = el("button", "", `<strong>${option.label}</strong><small>${option.sub}</small>`);
-      button.type = "button";
-      button.addEventListener("click", event => { event.stopPropagation(); picked = i; });
-      choiceGrid.appendChild(button);
-    });
-    this.game.canvas.parentElement!.appendChild(touchMenu);
-    const removeTouchMenu = () => touchMenu.remove();
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, removeTouchMenu);
-    const syncTouch = () => {
-      touchMenu.hidden = false;
-      c.setVisible(false);
-      touchMenu.querySelectorAll<HTMLButtonElement>("button").forEach((button, i) => {
-        button.classList.toggle("selected", i === sel);
-      });
-    };
-    syncTouch();
+    const host = this.game.canvas.parentElement!;
+    host.dataset.finaleChoice = "true";
+    const clearChoiceState = () => delete host.dataset.finaleChoice;
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, clearChoiceState);
     items.forEach((b, i) => {
       b.hit.on("pointerdown", () => (picked = i));
       b.hit.on("pointerover", () => { sel = i; paint(); });
@@ -288,7 +270,6 @@ export class FinaleBattle extends Phaser.Scene {
     paint();
     let last = { x: 0, y: 0 };
     while (picked < 0 && !this.forced) {
-      syncTouch();
       const a = input.axis();
       const dx = Math.abs(a.x) > 0.5 ? Math.sign(a.x) : 0;
       const dy = Math.abs(a.y) > 0.5 ? Math.sign(a.y) : 0;
@@ -302,9 +283,8 @@ export class FinaleBattle extends Phaser.Scene {
       await this.nextFrame();
     }
     sfx.select();
-    touchMenu.remove();
-    this.events.off(Phaser.Scenes.Events.SHUTDOWN, removeTouchMenu);
-    this.text.setVisible(true);
+    clearChoiceState();
+    this.events.off(Phaser.Scenes.Events.SHUTDOWN, clearChoiceState);
     c.destroy();
     return picked;
   }

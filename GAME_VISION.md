@@ -2028,21 +2028,25 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
 
 ### Menu finale seragam, input A dan skrin sedia bandar (2026-10-27)
 
-- Pilihan move Raja Nonchalant kini satu menu DOM untuk touch, gamepad dan keyboard;
-  arah/stick memindah fokus, A/Space mengesahkan, touch menekan pilihan. Fasa move
-  masih berubah selepas Mega Evolution.
+- Pilihan move Raja Nonchalant mengekalkan panel Pokémon asal dalam canvas untuk
+  semua input. Arah/stick memindah fokus, A/Space mengesahkan dan touch menekan
+  hitbox pilihan yang sama; kawalan maya disembunyikan ketika panel dibuka. Fasa
+  move masih berubah selepas Mega Evolution.
 - Tekanan butang baru disimpan sebagai input buffer 220ms khusus untuk loop Phaser,
   supaya loop boss tidak terlepas edge satu frame daripada loop input utama. Semantik
   `pressed()` dunia/UI kekal; reset/rotate membersihkan buffer.
-- Boss Phaser dan runner kini mengukur nisbah terus daripada bounds host sebenar,
-  bukan bergantung pada nilai viewport yang mungkin masih lama ketika UI Android
-  berubah. Panorama lebar dirender terus di dalam canvas dan menutup seluruh camera;
-  CSS backdrop hanya lapisan pertahanan, bukan sumber gambar utama.
+- Boss Phaser mengukur nisbah terus daripada bounds host sebenar dan memerhatikan
+  perubahan saiz host selepas UI Android stabil. Panorama lebar dirender terus di
+  dalam canvas dan menutup seluruh camera; CSS backdrop hanya lapisan pertahanan,
+  bukan sumber gambar utama. Runner menukar bounds fizikal kembali kepada koordinat
+  logik supaya Qish/Bowat kekal di kaki jalan.
 - Pemuatan bandar menggunakan latar mimpi pastel tanpa panel. Sprite baharu Bolat
   dan Bowat menari di tengah, dengan nama bandar dan bar gerak sahaja. Sumber dan
   prompt di `art/ui/README.md`.
 - Build production lulus. Audit Chromium touch 915×412 / DPR 2.75 mengesahkan semua
   lapan boss: backing canvas ikut nisbah host dan lima sampel tepi kanan setiap boss
-  alpha 255. Tekanan A gamepad singkat kekal dalam buffer lalu digunakan sekali;
-  finale memaparkan satu menu DOM yang sama. Android dan gamepad fizikal masih perlu
-  semakan akhir kerana audit ini menggunakan emulasi browser.
+  alpha 255. Tekanan A gamepad singkat kekal dalam buffer lalu digunakan sekali.
+  Touch finale memilih hitbox panel Pokémon canvas yang sama; tiada menu DOM kedua.
+  Audit runner mengukur Qish berakhir pada y=407/412 dan Bowat y=389/412. Jalur pink
+  masih perlu disahkan pada Android sebenar yang melaporkannya; emulasi tidak cukup
+  untuk mendakwa isu peranti itu selesai.

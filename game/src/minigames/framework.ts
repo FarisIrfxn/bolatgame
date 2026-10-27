@@ -227,9 +227,22 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
           scene.events.emit("widearenaresize");
           instance.scale.refresh();
         };
-        const resized = () => requestAnimationFrame(() => { if (game === instance) fit(); });
+        let fitFrame = 0;
+        const resized = () => {
+          cancelAnimationFrame(fitFrame);
+          fitFrame = requestAnimationFrame(() => { if (game === instance) fit(); });
+        };
+        // Android browser chrome can settle after the viewport event that opened
+        // the boss. Observe the actual host as well, so its new width always
+        // resizes the backing canvas and camera instead of exposing a side strip.
+        const hostObserver = new ResizeObserver(resized);
+        hostObserver.observe(host);
         fit(); window.addEventListener("gameviewportresize", resized);
-        scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener("gameviewportresize", resized));
+        scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+          window.removeEventListener("gameviewportresize", resized);
+          hostObserver.disconnect();
+          cancelAnimationFrame(fitFrame);
+        });
         styleIllustratedScene(scene);
         instance.events.once(Phaser.Core.Events.POST_RENDER, () => {
           instance.canvas.style.visibility = "visible";
