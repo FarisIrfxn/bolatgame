@@ -105,24 +105,27 @@ lebar rujukan 1280/100 pada landscape, supaya huruf tidak membesar ikut lebar fo
 serta hit area interaktif memakai saiz piksel fizikal. Tombol fullscreen pada title
 muncul jika browser touch menyokongnya; manifest installed app meminta landscape.
 
-Boss Phaser mengekalkan arena/hitbox 1280×720 di atas panorama penuh. Canvas dipasang
-dalam safe area dan mengukur semula bounds sentuhan selepas rotate. Runner merender
-panorama/road penuh dengan aturan tiga lorong asal. Finale mempunyai menu move sentuh
+Boss Phaser mengekalkan bounds gameplay 1280×720, sementara kamera/render window
+memenuhi landscape: paparan lebih lebar menunjukkan kawasan tambahan di sisi, skrin
+laptop 16:10 menunjukkan sedikit kawasan tambahan atas/bawah tanpa meregangkan sprite.
+Latar penuh skrin mengisi kawasan luar arena; portrait kekal 16:9 berpusat. Canvas mengukur
+semula bounds sentuhan selepas rotate. Runner turut memenuhi landscape dengan crop kecil
+di sisi jika skrin lebih sempit, dan kekal 16:9 berpusat dalam portrait. Finale mempunyai menu move sentuh
 native (minimum 44px); memory boleh ditap terus tanpa joystick menutup grid.
 
 Input dilepaskan selepas rotate, blur, pointer cancel atau app switch. Dialog/surat
-boleh diskrol dengan jari. Renderer dunia menggunakan profil grafik adaptif: DPR maksimum
-2/1.25/1 dan shadow map 2048/1024/512px bagi tinggi/sederhana/rendah. Frame clock dan
-Phaser dihadkan kepada 60 FPS pada peranti touch. Ini had render, bukan jaminan FPS pada
-semua perkakasan. Semua **481 aset / 69.3 MB** masih
+boleh diskrol dengan jari. Renderer dunia memilih profil sekali berdasarkan maklumat
+peranti/GPU: tinggi untuk GPU diskret, sederhana untuk kebanyakan peranti, dan rendah
+untuk iOS serta peranti Android berspesifikasi rendah. Profil rendah mengehadkan DPR
+kepada 0.8, mematikan shadow dan post-processing; sederhana memakai DPR 1.25 dan shadow
+1024px; tinggi memakai DPR 2, shadow 2048px dan tilt-shift. Tiada pertukaran profil
+semasa bermain. Frame clock dan Phaser dihadkan kepada 60 FPS pada peranti touch. Ini
+had render, bukan jaminan FPS pada semua perkakasan. Semua **481 aset / 69.3 MB** masih
 dimuat di awal, mengikut keputusan Faris; panorama menambah 1.77 MB.
 
-Tetapan `Grafik` dalam menu sambung berputar antara **Auto**, **Rendah** dan **Tinggi**
-serta disimpan berasingan daripada save cerita. Auto bermula dengan profil sederhana pada
-peranti touch dan tinggi pada peranti lain; bacaan FPS lima saat menurunkan kualiti selepas
-dua sampel di bawah 43 FPS, dan menaikkannya semula selepas enam sampel melebihi 56 FPS.
-Perubahan melaras DPR, resolusi shadow map dan tilt-shift. FPS, kiraan sumber GPU dan
-pertukaran profil direkodkan melalui `?diag=1`.
+Profil dan maklumat GPU yang browser dedahkan direkodkan bersama FPS/kiraan sumber GPU
+melalui `?diag=1`. Safari boleh menyembunyikan model GPU dan RAM; dalam keadaan itu profil
+iOS rendah dipilih secara konservatif.
 
 Audit: `pipeline/audit/mobile-fullscreen*.mjs`. Sumber/prompt Imagegen, exporter,
 screenshot dan laporan: [mobile fullscreen](../art/mobile-fullscreen-2026-10-27/README.md).

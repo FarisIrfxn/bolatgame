@@ -1,54 +1,35 @@
-export type GraphicsMode = "auto" | "low" | "high";
 export type GraphicsTier = 0 | 1 | 2;
+export type GraphicsProfile = { tier: GraphicsTier; name: "tinggi" | "sederhana" | "rendah"; maxDpr: number; shadowSize: number; shadows: boolean; postProcessing: "cinematic" | "grade" | "none" };
 
-const KEY = "qish-graphics-mode-v1";
-const changed = new EventTarget();
-let mode: GraphicsMode = readMode();
-let tier: GraphicsTier = mode === "low" ? 2 : mode === "high" ? 0 : (navigator.maxTouchPoints > 0 ? 1 : 0);
-
-function readMode(): GraphicsMode {
-  try {
-    const value = localStorage.getItem(KEY);
-    if (value === "low" || value === "high" || value === "auto") return value;
-  } catch { /* storage can be disabled */ }
-  return "auto";
-}
-
-export function graphicsMode() { return mode; }
-export function graphicsTier() { return tier; }
-export function graphicsLabel() { return mode === "auto" ? "Auto" : mode === "low" ? "Rendah" : "Tinggi"; }
-
-export function setGraphicsMode(next: GraphicsMode) {
-  mode = next;
-  if (next !== "auto") tier = next === "low" ? 2 : 0;
-  else tier = navigator.maxTouchPoints > 0 ? 1 : 0;
-  try { localStorage.setItem(KEY, mode); } catch { /* keep the setting for this session */ }
-  changed.dispatchEvent(new CustomEvent("change", { detail: { mode, tier } }));
-  return mode;
-}
-
-export function cycleGraphicsMode() {
-  return setGraphicsMode(mode === "auto" ? "low" : mode === "low" ? "high" : "auto");
-}
-
-export function onGraphicsChange(listener: (mode: GraphicsMode, tier: GraphicsTier) => void) {
-  const handler = (event: Event) => {
-    const detail = (event as CustomEvent<{ mode: GraphicsMode; tier: GraphicsTier }>).detail;
-    listener(detail.mode, detail.tier);
-  };
-  changed.addEventListener("change", handler);
-  return () => changed.removeEventListener("change", handler);
-}
-
-export function setAutomaticTier(next: GraphicsTier) {
-  if (mode !== "auto" || next === tier) return false;
-  tier = next;
-  changed.dispatchEvent(new CustomEvent("change", { detail: { mode, tier } }));
-  return true;
-}
-
-export const GRAPHICS_PROFILES = [
-  { maxDpr: 2, shadowSize: 2048, tiltShift: true },
-  { maxDpr: 1.25, shadowSize: 1024, tiltShift: false },
-  { maxDpr: 1, shadowSize: 512, tiltShift: false },
+const PROFILES: readonly GraphicsProfile[] = [
+  { tier: 0, name: "tinggi", maxDpr: 2, shadowSize: 2048, shadows: true, postProcessing: "cinematic" },
+  { tier: 1, name: "sederhana", maxDpr: 1.25, shadowSize: 1024, shadows: true, postProcessing: "grade" },
+  { tier: 2, name: "rendah", maxDpr: 0.8, shadowSize: 0, shadows: false, postProcessing: "none" },
 ] as const;
+
+/** Pick once per app session. Safari hides device memory and GPU model, so iOS is conservative. */
+export function detectGraphicsProfile(renderer: { getContext(): WebGLRenderingContext | WebGL2RenderingContext }): GraphicsProfile {
+  const ua = navigator.userAgent;
+  const iosTouch = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  let gpu = "";
+  try {
+    const gl = renderer.getContext();
+    const debug = gl.getExtension("WEBGL_debug_renderer_info") as { UNMASKED_RENDERER_WEBGL: number } | null;
+    gpu = String(gl.getParameter(debug?.UNMASKED_RENDERER_WEBGL ?? gl.RENDERER));
+  } catch { /* use the platform fallback */ }
+
+  const nav = navigator as Navigator & { deviceMemory?: number };
+  const memory = nav.deviceMemory;
+  const cores = nav.hardwareConcurrency || 0;
+  const capableIntegratedGpu = /Mali-G7\d|Mali-G5[7-9]|Adreno (?:6[4-9]\d|7\d\d)|Apple M[1-9]/i.test(gpu);
+
+  let tier: GraphicsTier = 1;
+  if (iosTouch || ((memory !== undefined && memory <= 4) || (cores > 0 && cores <= 4) || /Mali-G52|Adreno 61[0-8]|PowerVR GE/i.test(gpu)) && !capableIntegratedGpu) {
+    tier = 2;
+  } else if (/GeForce|NVIDIA.*RTX|Radeon RX/i.test(gpu)) {
+    tier = 0;
+  }
+  return PROFILES[tier];
+}
+
+export const GRAPHICS_PROFILES = PROFILES;

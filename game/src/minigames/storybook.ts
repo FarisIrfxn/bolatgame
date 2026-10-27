@@ -58,9 +58,9 @@ export function preloadStorybook(scene: Phaser.Scene, boss: BossId, aliases: Rec
 
 export function illustratedBackdrop(scene: Phaser.Scene) {
   const background = scene.add.image(0, 0, "art_background").setOrigin(0).setDisplaySize(1280, 720).setDepth(-1000);
-  // Wide phones see the matching generated panorama behind the transparent
-  // arena; hitboxes and every gameplay coordinate remain in the original arena.
-  const sync = () => background.setVisible(gameViewport.width / gameViewport.height <= 1280 / 720 + .005);
+  // Non-16:9 layouts use the matching full-bleed CSS backdrop behind the arena.
+  // Keeping only one copy avoids a second, differently cropped image on laptops.
+  const sync = () => background.setVisible(Math.abs(gameViewport.width / gameViewport.height - 1280 / 720) <= .005);
   sync(); window.addEventListener("gameviewportresize", sync);
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener("gameviewportresize", sync));
   return background;

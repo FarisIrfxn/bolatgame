@@ -1984,18 +1984,36 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
   Build production lulus. Safari iPhone fizikal, FPS sebenar dan punca tepat model hitam
   masih perlu disahkan menggunakan log/peranti tersebut; tiada deploy Netlify.
 
-### Grafik adaptif, resize Safari dan latar boss laptop (2026-10-27)
+### Profil grafik peranti, resize Safari dan latar boss laptop (2026-10-27)
 
-- Menu sambung ada pilihan grafik **Auto / Rendah / Tinggi**, disimpan berasingan
-  daripada progres. Auto bermula sederhana pada peranti touch dan tinggi pada desktop;
-  bacaan FPS 5 saat menurunkan tier selepas dua bacaan bawah 43 FPS dan menaikkan
-  selepas enam bacaan melebihi 56 FPS. Tier mengubah had DPR, resolusi shadow map
-  dan tilt-shift. Metrik/perubahan dicatat dalam `?diag=1`.
+- Pilihan grafik pemain dan pertukaran kualiti berdasarkan FPS dibuang. Profil dipilih
+  sekali semasa renderer dibuat, berdasarkan platform, RAM/teras CPU jika tersedia dan
+  nama GPU WebGL jika browser membenarkannya. iOS mendapat profil rendah konservatif;
+  GPU diskret NVIDIA/AMD profil tinggi; selebihnya sederhana melainkan petunjuk perkakasan
+  lemah. Profil rendah DPR 0.8, tanpa shadow/post-processing; sederhana DPR 1.25 + shadow
+  1024px + grade; tinggi DPR 2 + shadow 2048px + tilt-shift. FPS/GPU/profil kekal dalam log.
 - Resize viewport kini dijadualkan sekali setiap frame dan tidak lagi memerhati
   `#game-shell` sambil menulis saiz pada elemen yang sama. Ralat ResizeObserver dalam
   diagnostik diringkaskan agar tidak menenggelamkan log.
-- CSS panorama boss hanya dilukis di luar arena pada skrin lebar. Nisbah biasa kini
-  menggunakan latar Phaser sahaja, supaya latar 16:9 tidak bertindih dengan salinan
-  CSS yang mungkin terskala atau tercrop berbeza.
+- Percubaan awal mengehadkan panorama CSS kepada skrin lebar dan memakai warna rata
+  pada nisbah lain; ini mendedahkan bar pink pada laptop. Susulan semasa memenuhi
+  landscape dengan camera window adaptif dan latar cover penuh (lihat seksyen seterusnya).
 - Belum diuji pada peranti fizikal atau laptop yang melaporkan isu; perubahan memerlukan
   semakan browser sebelum deploy.
+
+### Pelarasan boss laptop dan profil iPhone tetap (2026-10-27)
+
+- Phaser boss kini mengisi landscape tanpa meregangkan sprite: kamera menunjukkan ruang
+  tambahan di sisi untuk skrin lebar, atau atas/bawah untuk laptop 16:10. World bounds dan
+  hitbox kekal 1280×720. Latar CSS penuh digunakan di luar nisbah 16:9; portrait kekal
+  arena 16:9 berpusat. Runner custom ikut aturan fill/crop yang sama dalam landscape.
+- Grafik tidak lagi berubah berdasarkan FPS atau menu pilihan. iPhone/iPad guna profil
+  Low tetap (DPR 0.8, tanpa shadow dan post-processing); Android dinilai daripada petunjuk
+  RAM/CPU/GPU, desktop RTX/GeForce atau Radeon RX guna profil tinggi, selebihnya sederhana.
+- Log WebKit umum menunjukkan iPhone 11/11 Pro pernah mengalami WebGL context loss pada
+  keluaran iOS 18 terdahulu; laporan berkaitan turut menyebut GPU command-buffer hang.
+  Bug shader yang berasingan ditandakan telah dibaiki dalam iOS 18.5. Ini menyokong
+  kemungkinan had WebGL/GPU pada Safari, bukan bukti punca tepat untuk game ini.
+- Build TypeScript/Vite lulus selepas perubahan; Safari iPhone dan laptop sebenar belum
+  diuji. Log peranti masih diperlukan untuk mengesahkan sama ada profil Low mengelakkan
+  kehilangan konteks.

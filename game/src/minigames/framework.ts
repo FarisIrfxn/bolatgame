@@ -103,13 +103,12 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
   await prepareMinigame(def);
   host.dataset.boss = def.id;
   const syncBackdrop = () => {
-    const wide = gameViewport.width / gameViewport.height > 1280 / 720 + .005;
-    // Normal aspect ratios already draw the 16:9 art inside the Phaser canvas.
-    // A second CSS copy behind it can drift/crop on laptop viewports. The CSS
-    // panorama is only needed outside the centered arena on genuinely wide screens.
-    host.style.background = wide
-      ? `#f4dbe5 url("/assets/mobile/bg_${def.id}.webp") center / cover no-repeat`
-      : "#f4dbe5";
+    const ratio = gameViewport.width / gameViewport.height;
+    const exact = Math.abs(ratio - 1280 / 720) <= .005;
+    const art = ratio > 1280 / 720 + .005 ? `/assets/mobile/bg_${def.id}.webp` : `/assets/storybook/bg_${def.id}.webp`;
+    // The 16:9 scene art is used once inside the canvas at its native ratio.
+    // Other aspect ratios get a full-bleed cover behind the transparent canvas.
+    host.style.background = exact ? "#f4dbe5" : `#f4dbe5 url("${art}") center / cover no-repeat`;
   };
   syncBackdrop();
   window.addEventListener("gameviewportresize", syncBackdrop);
@@ -200,27 +199,30 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
       instance.scene.add(def.sceneKey!, def.scene!, false);
       const scene = instance.scene.getScene(def.sceneKey!);
       scene.events.once(Phaser.Scenes.Events.CREATE, () => {
-        if (["bowat", "megabowat", "finale"].includes(def.id)) {
-          // These scenes draw moving scenery/effects outside the original field.
-          // Expand the render window, keeping original world coordinates centred.
-          const fit = () => {
-            const wide = gameViewport.width / gameViewport.height > 1280 / 720 + .005;
-            const width = wide ? gameViewport.width : 1280;
-            const pad = (width - 1280) / 2;
-            instance.scale.resize(width, 720);
-            instance.canvas.style.cssText = wide
-              ? "position:absolute;inset:0;width:100%;height:100%"
-              : ARENA_STYLE;
-            scene.cameras.main.setSize(width, 720).setScroll(-pad, 0);
-            scene.physics.world.setBounds(0, 0, 1280, 720);
-            scene.data.set("widePad", pad);
-            scene.events.emit("widearenaresize");
-            instance.scale.refresh();
-          };
-          const resized = () => requestAnimationFrame(() => { if (game === instance) fit(); });
-          fit(); window.addEventListener("gameviewportresize", resized);
-          scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener("gameviewportresize", resized));
-        }
+        // Fill landscape screens without distorting the 16:9 gameplay. Wider
+        // screens show extra sides; 16:10 laptop screens show extra sky/ground.
+        // World bounds and gameplay coordinates remain in the original 1280×720 area.
+        const fit = () => {
+          const ratio = gameViewport.width / gameViewport.height;
+          const fillLandscape = ratio >= 1.4;
+          const width = fillLandscape && ratio > 1280 / 720 + .005 ? gameViewport.width : 1280;
+          const height = fillLandscape && ratio < 1280 / 720 - .005 ? 1280 / ratio : 720;
+          const padX = (width - 1280) / 2;
+          const padY = (height - 720) / 2;
+          instance.scale.resize(width, height);
+          instance.canvas.style.cssText = fillLandscape
+            ? "position:absolute;inset:0;width:100%;height:100%;transform:none"
+            : ARENA_STYLE;
+          scene.cameras.main.setSize(width, height).setScroll(-padX, -padY);
+          scene.physics.world.setBounds(0, 0, 1280, 720);
+          scene.data.set("widePad", padX);
+          scene.data.set("tallPad", padY);
+          scene.events.emit("widearenaresize");
+          instance.scale.refresh();
+        };
+        const resized = () => requestAnimationFrame(() => { if (game === instance) fit(); });
+        fit(); window.addEventListener("gameviewportresize", resized);
+        scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener("gameviewportresize", resized));
         styleIllustratedScene(scene);
         instance.events.once(Phaser.Core.Events.POST_RENDER, () => {
           instance.canvas.style.visibility = "visible";

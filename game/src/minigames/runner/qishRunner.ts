@@ -18,7 +18,7 @@ interface Word { label: string; lane: number; z: number; state: "incoming" | "sm
 export function createQishRunner(host: HTMLElement, ctx: MinigameCtx): CustomMinigame {
   const canvas = el("canvas", "storybook-runner");
   canvas.width = W * 4; canvas.height = H * 4;
-  canvas.style.cssText = "position:absolute;left:50%;top:50%;width:min(100%,calc(100cqh * 16 / 9));height:auto;transform:translate(-50%,-50%);image-rendering:auto";
+  canvas.style.cssText = "position:absolute;inset:0;width:100%;height:100%;transform:none;image-rendering:auto";
   host.appendChild(canvas);
   const g = canvas.getContext("2d")!;
   g.imageSmoothingEnabled = true;
@@ -43,12 +43,18 @@ export function createQishRunner(host: HTMLElement, ctx: MinigameCtx): CustomMin
     // The viewport model is updated before this event. Container-query layout
     // can still report the previous frame's host dimensions during a rotation.
     const w = gameViewport.width, h = gameViewport.height;
-    scale = Math.min(w / W, h / H); left = (w - W * scale) / 2; top = (h - H * scale) / 2;
-    const wide = w / h > W / H + .005;
-    span = wide ? w / scale : W;
+    // Fill landscape while preserving proportions: wide screens reveal scenery,
+    // narrower landscape screens crop only the outer edges. Keep the existing
+    // centered 16:9 playfield in portrait.
+    const fullBleed = w / h >= 1.4;
+    scale = fullBleed ? h / H : Math.min(w / W, h / H);
+    left = (w - W * scale) / 2; top = (h - H * scale) / 2;
+    span = fullBleed ? w / scale : W;
     for (const layer of [canvas, foreground]) {
       layer.width = Math.ceil(span * 4); layer.height = H * 4;
-      layer.style.width = wide ? "100%" : "min(100%,calc(100cqh * 16 / 9))";
+      layer.style.cssText = fullBleed
+        ? "position:absolute;inset:0;width:100%;height:100%;transform:none;image-rendering:auto"
+        : "position:absolute;left:50%;top:50%;width:min(100%,calc(100cqh * 16 / 9));height:auto;transform:translate(-50%,-50%);image-rendering:auto";
     }
     for (const ink of [g, nearInk]) {
       ink.setTransform(4, 0, 0, 4, (span - W) * 2, 0);

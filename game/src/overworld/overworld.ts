@@ -4,7 +4,7 @@ import { gameViewport } from "../core/viewport";
 import { onFrame } from "../core/loop";
 import { save } from "../core/save";
 import { diagnostic } from "../core/diagnostics";
-import { GRAPHICS_PROFILES, graphicsMode, graphicsTier, onGraphicsChange, setAutomaticTier, type GraphicsTier } from "../core/graphics";
+import { detectGraphicsProfile, type GraphicsProfile } from "../core/graphics";
 import { dialogOpen } from "../ui/dialog";
 import { el, stage, ui } from "../ui/dom";
 import { PaperSprite, paperStandee, releaseZonePaperTextures, type Facing } from "./paper";
@@ -61,7 +61,8 @@ export class Overworld {
   private renderer = new THREE.WebGLRenderer({ antialias: !TOUCH_DEVICE });
   private scene = new THREE.Scene();
   private camera = new THREE.PerspectiveCamera(34, 1, 0.5, 200);
-  private post!: ReturnType<typeof makeComposer>;
+  private post: ReturnType<typeof makeComposer> | null = null;
+  private graphicsProfile!: GraphicsProfile;
   // Warm key light plus a cool lavender fill is the shared style anchor for
   // every zone. Individual zones may shift the mood, but never back to the
   // harsh neutral lighting of the old prototype.
@@ -102,21 +103,18 @@ export class Overworld {
   private zoneTask: Promise<void> = Promise.resolve();
   private sampleAt = performance.now();
   private sampleFrames = 0;
-  private graphicsTierNow: GraphicsTier = graphicsTier();
-  private slowSamples = 0;
-  private fastSamples = 0;
 
   constructor(private hooks: OverworldHooks) {
-    this.renderer.setPixelRatio(Math.min(GRAPHICS_PROFILES[this.graphicsTierNow].maxDpr, window.devicePixelRatio));
-    this.renderer.shadowMap.enabled = true;
+    this.graphicsProfile = detectGraphicsProfile(this.renderer);
+    this.renderer.setPixelRatio(Math.min(this.graphicsProfile.maxDpr, window.devicePixelRatio));
+    this.renderer.shadowMap.enabled = this.graphicsProfile.shadows;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.16;
-    this.post = makeComposer(this.renderer, this.scene, this.camera, { lowPower: this.graphicsTierNow > 0 });
-    onGraphicsChange((_mode, tier) => {
-      this.slowSamples = this.fastSamples = 0;
-      this.applyGraphicsTier(tier);
-    });
+    if (this.graphicsProfile.postProcessing !== "none") {
+      this.post = makeComposer(this.renderer, this.scene, this.camera, { lowPower: this.graphicsProfile.postProcessing !== "cinematic" });
+    }
+    diagnostic("graphics profile", { ...this.graphicsProfile, gpu: this.graphicsRendererName() });
     this.webglWarning.hidden = true;
     ui().appendChild(this.webglWarning);
     this.renderer.domElement.addEventListener("webglcontextlost", (event) => {
@@ -145,8 +143,8 @@ export class Overworld {
   private async init() {
     await Promise.all([document.fonts.load("74px 'Bagel Fat One'"), document.fonts.load("bold 64px 'Gaegu'")]).catch(() => {});
     this.sun.castShadow = true;
-    const shadowSize = GRAPHICS_PROFILES[this.graphicsTierNow].shadowSize;
-    this.sun.shadow.mapSize.set(shadowSize, shadowSize);
+    this.sun.castShadow = this.graphicsProfile.shadows;
+    if (this.graphicsProfile.shadowSize) this.sun.shadow.mapSize.set(this.graphicsProfile.shadowSize, this.graphicsProfile.shadowSize);
     const sc = this.sun.shadow.camera;
     sc.left = -26;
     sc.right = 26;
@@ -399,7 +397,7 @@ export class Overworld {
       // Release full-screen post targets while a boss or the next city loads.
       // mount() resizes them before the next world frame.
       this.renderer.setSize(1, 1, false);
-      this.post.resize(1, 1);
+      this.post?.resize(1, 1);
     }
   }
 
@@ -436,26 +434,18 @@ export class Overworld {
     const fov = this.zone?.planet?.fov ?? [34, 48];
     this.camera.fov = w / h < 1 ? fov[1] : fov[0];
     this.camera.updateProjectionMatrix();
-    const screenDpr = Math.min(GRAPHICS_PROFILES[this.graphicsTierNow].maxDpr, window.devicePixelRatio);
+    const screenDpr = Math.min(this.graphicsProfile.maxDpr, window.devicePixelRatio);
     this.renderer.setPixelRatio(screenDpr * scale);
     this.renderer.setSize(w, h);
-    this.post.resize(w, h);
+    this.post?.resize(w, h);
   }
 
-  private applyGraphicsTier(tier: GraphicsTier) {
-    const profile = GRAPHICS_PROFILES[tier];
-    diagnostic("graphics setting", { mode: graphicsMode(), tier, ...profile });
-    if (tier === this.graphicsTierNow) return;
-    this.graphicsTierNow = tier;
-    if (this.sun.shadow.mapSize.x !== profile.shadowSize || this.sun.shadow.mapSize.y !== profile.shadowSize) {
-      this.sun.shadow.map?.dispose();
-      this.sun.shadow.map = null;
-      this.sun.shadow.mapSize.set(profile.shadowSize, profile.shadowSize);
-      this.sun.shadow.needsUpdate = true;
-    }
-    this.post.setTiltShift(profile.tiltShift);
-    this.resize();
-    diagnostic("graphics quality applied", { mode: graphicsMode(), tier, ...profile });
+  private graphicsRendererName() {
+    try {
+      const gl = this.renderer.getContext();
+      const debug = gl.getExtension("WEBGL_debug_renderer_info") as { UNMASKED_RENDERER_WEBGL: number } | null;
+      return String(gl.getParameter(debug?.UNMASKED_RENDERER_WEBGL ?? gl.RENDERER));
+    } catch { return "unavailable"; }
   }
 
   private blocked(x: number, z: number) {
@@ -539,7 +529,8 @@ export class Overworld {
 
     this.updateCamera(dt);
     this.updateFade(dt);
-    this.post.composer.render(dt);
+    if (this.post) this.post.composer.render(dt);
+    else this.renderer.render(this.scene, this.camera);
     if (!document.hidden) {
       this.sampleFrames++;
       const elapsed = performance.now() - this.sampleAt;
@@ -563,20 +554,8 @@ export class Overworld {
           gpuGeometries: this.renderer.info.memory.geometries,
           closedMaps: closedMaps.size,
           canvas: [this.renderer.domElement.width, this.renderer.domElement.height],
-          mode: graphicsMode(),
-          tier: this.graphicsTierNow,
+          profile: this.graphicsProfile.name,
         });
-        if (graphicsMode() === "auto") {
-          this.slowSamples = fps < 43 ? this.slowSamples + 1 : 0;
-          this.fastSamples = fps > 56 ? this.fastSamples + 1 : 0;
-          if (this.slowSamples >= 2 && this.graphicsTierNow < 2) {
-            this.slowSamples = this.fastSamples = 0;
-            setAutomaticTier((this.graphicsTierNow + 1) as GraphicsTier);
-          } else if (this.fastSamples >= 6 && this.graphicsTierNow > 0) {
-            this.slowSamples = this.fastSamples = 0;
-            setAutomaticTier((this.graphicsTierNow - 1) as GraphicsTier);
-          }
-        }
         this.sampleAt = performance.now();
         this.sampleFrames = 0;
       }
