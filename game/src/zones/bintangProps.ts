@@ -647,14 +647,24 @@ function screenTexture(W: number, H: number, kind: "main" | "eq" | "ad", st: Scr
   const c = canvas.getContext("2d")!;
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
+  const mobile = navigator.maxTouchPoints > 0;
+  // Paint once before the first draw; an offscreen display can then pause its
+  // animation without appearing blank when the player turns towards it.
+  if (mobile) paintScreen(c, W, H, phase, kind, st);
+  let lastVisible = -Infinity;
   let next = 0;
   const update = (t: number) => {
+    if (mobile && t - lastVisible > 0.25) return;
     if (t < next) return;
     next = t + 1 / 12;
     paintScreen(c, W, H, t + phase, kind, st);
     tex.needsUpdate = true;
   };
-  return { tex, update };
+  const watch = (screen: THREE.Mesh) => {
+    if (mobile) screen.onBeforeRender = () => { lastVisible = performance.now() / 1000; };
+    return screen;
+  };
+  return { tex, update, watch };
 }
 
 /** The screen tower on the top block, its corner pointing at the junction like the real one: a giant
@@ -708,20 +718,20 @@ export function screenTower(at: [number, number], st: ScreenState): Anim {
   const cx = R * 0.7;
   const cz = -R * 0.7;
   const corner = screenTexture(1024, 288, "main", st);
-  group.add(mesh(new THREE.CylinderGeometry(R, R, 7.4, 28, 1, true, -Math.PI / 2 - 0.35, Math.PI / 2 + 0.7), glow(corner.tex), cx, 6.9, cz));
+  group.add(corner.watch(mesh(new THREE.CylinderGeometry(R, R, 7.4, 28, 1, true, -Math.PI / 2 - 0.35, Math.PI / 2 + 0.7), glow(corner.tex), cx, 6.9, cz)));
   for (const y of [3.1, 10.7]) group.add(mesh(new THREE.CylinderGeometry(R + 0.14, R + 0.14, 0.32, 28, 1, false, -Math.PI / 2 - 0.35, Math.PI / 2 + 0.7), flat(0x1c1c22), cx, y, cz));
   // A big screen on each face.
   const s2 = screenTexture(768, 384, "ad", st, 3);
-  const a = mesh(new THREE.PlaneGeometry(12, 6), glow(s2.tex), 11.6, 6.7, 0.18);
+  const a = s2.watch(mesh(new THREE.PlaneGeometry(12, 6), glow(s2.tex), 11.6, 6.7, 0.18));
   group.add(a, box(12.5, 6.5, 0.12, flat(0x1c1c22), 11.6, 6.7, 0.04));
   const s3 = screenTexture(768, 384, "main", st, 5);
-  const b = mesh(new THREE.PlaneGeometry(12, 6), glow(s3.tex), -0.18, 6.7, -11.6);
+  const b = s3.watch(mesh(new THREE.PlaneGeometry(12, 6), glow(s3.tex), -0.18, 6.7, -11.6));
   b.rotation.y = -Math.PI / 2;
   group.add(b, box(0.12, 6.5, 12.5, flat(0x1c1c22), -0.04, 6.7, -11.6));
   // Equaliser bands along the top of both faces.
   const eq = screenTexture(768, 96, "eq", st, 1);
-  const e1 = mesh(new THREE.PlaneGeometry(18, 1.6), glow(eq.tex), 13, 11.9, 0.06);
-  const e2 = mesh(new THREE.PlaneGeometry(18, 1.6), glow(eq.tex), -0.06, 11.9, -13);
+  const e1 = eq.watch(mesh(new THREE.PlaneGeometry(18, 1.6), glow(eq.tex), 13, 11.9, 0.06));
+  const e2 = eq.watch(mesh(new THREE.PlaneGeometry(18, 1.6), glow(eq.tex), -0.06, 11.9, -13));
   e2.rotation.y = -Math.PI / 2;
   group.add(e1, e2);
   // Shop sign over the doors on the south-east face.
@@ -757,7 +767,7 @@ export function screenTower(at: [number, number], st: ScreenState): Anim {
 export function roofScreen(x: number, y: number, z: number, w: number, h: number, kind: "main" | "eq" | "ad", st: ScreenState, phase = 0): Anim {
   const group = new THREE.Group();
   const s = screenTexture(512, Math.round((512 * h) / w), kind, st, phase);
-  group.add(mesh(new THREE.PlaneGeometry(w, h), glow(s.tex), x, y + h / 2 + 1, z + 0.08));
+  group.add(s.watch(mesh(new THREE.PlaneGeometry(w, h), glow(s.tex), x, y + h / 2 + 1, z + 0.08)));
   group.add(box(w + 0.3, h + 0.3, 0.12, flat(0x2a2730), x, y + h / 2 + 1, z));
   for (const dx of [-w / 3, w / 3]) group.add(box(0.2, 1.2, 0.2, flat(0x55555e), x + dx, y + 0.5, z - 0.2));
   return { group, update: s.update };

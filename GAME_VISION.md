@@ -1941,3 +1941,18 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
   tanpa page error. Bukti audit: `/tmp/qish-zone-models.json` (sementara).
 - Build TypeScript/Vite lulus. Pengesahan ini browser Chromium dengan emulasi touch;
   ujian crash/FPS pada Safari iPhone sebenar masih diperlukan. Tiada deploy Netlify.
+
+### Spot kamera Bukit Bintang pada mobile (2026-10-27)
+
+- Audit fokus `pipeline/audit/bb-scenic.mjs` mengukur spot foto dalam landscape,
+  portrait dan desktop. Skyline hanya ~9 ribu segi tiga; shadow pass ialah beban
+  besar. Fader objek tidak aktif di titik tersebut.
+- Mobile BB kini mengecilkan kawasan shadow secara beransur apabila kamera
+  masuk spot foto (radius 26 ke 14); desktop dan bandar lain kekal radius 26.
+  Skrin animasi BB berhenti melukis semula canvas apabila di luar pandangan,
+  lalu sambung apabila kelihatan. Resolusi, mipmap dan rupa skrin dikekalkan.
+- Pada emulasi touch landscape, spot foto turun daripada ~1.29 juta kepada
+  ~0.93 juta segi tiga setiap frame; portrait ~1.00 juta kepada ~0.64 juta.
+  Screenshot selepas perubahan masih mengekalkan komposisi dan skrin. Build
+  lulus; tiada page error dalam tiga layout. Angka ini daripada GPU desktop,
+  bukan bukti crash Safari fizikal sudah selesai. Uji di iPhone sebenar.

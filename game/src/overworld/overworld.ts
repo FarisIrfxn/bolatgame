@@ -589,6 +589,16 @@ export class Overworld {
     this.camera.position.copy(this.camTarget).add(this.camOffset);
     this.camera.lookAt(this.camTarget.x, 1 + ((sc?.lookY ?? 1) - 1) * k, this.camTarget.z - (sc?.lookAhead ?? 0) * k);
     planet.centre(this.camTarget.x, this.camTarget.z);
+    // The BB photo camera looks far down the street. On phones, keeping the
+    // normal shadow area there redraws most of the city into a 1024px map.
+    // Ease the shadow area in with the camera so shadows elsewhere stay intact.
+    const shadowRadius = TOUCH_DEVICE && this.zone!.id === "sunway" ? THREE.MathUtils.lerp(26, 14, k) : 26;
+    const shadowCamera = this.sun.shadow.camera;
+    if (Math.abs(shadowCamera.right - shadowRadius) > 0.01) {
+      shadowCamera.left = shadowCamera.bottom = -shadowRadius;
+      shadowCamera.right = shadowCamera.top = shadowRadius;
+      shadowCamera.updateProjectionMatrix();
+    }
     this.sun.position.set(this.camTarget.x - 12, 22, this.camTarget.z + 9);
     this.sun.target.position.copy(this.camTarget);
   }
