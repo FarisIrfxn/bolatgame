@@ -1892,3 +1892,12 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
 - Bukti: `art/mobile-fullscreen-2026-10-27/README.md`, `qa/summary.json`,
   `pipeline/audit/mobile-fullscreen*.mjs`, `docs/UI_QC.md`. Emulasi Chromium sahaja;
   fon fizikal, Safari, FPS, haba dan penggunaan bateri peranti belum diukur.
+
+### Susulan wide tiga boss (2026-10-27)
+
+- Hujan/langit finale, periuk Mega Bowat dan sprite di tepi Bowat masih terpotong
+  pada canvas 16:9. Tiga scene ini kini mempunyai render window lebar dengan kamera
+  mengimbangi sisi; koordinat gameplay dan bounds fizik asal dikekalkan.
+- Hujan/langit memenuhi sisi tambahan; periuk spawn/despawn di luar skrin sebenar.
+  Bounds pergerakan Qish mengambil kira lebar doodle, termasuk pada paparan 16:9.
+- Pas fokus atas permintaan Faris untuk menjimatkan masa/token; tiada audit penuh.

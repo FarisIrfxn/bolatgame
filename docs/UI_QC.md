@@ -446,3 +446,14 @@ Laporan: [layout/kontras/input](../art/ending-keepsake-2026-10-27/verification.j
 [aliran sebenar](../art/ending-keepsake-2026-10-27/flow-verification.json),
 [production](../art/ending-keepsake-2026-10-27/production-verification.json).
 Pas ini mengatasi nota “belum QA” bagi **ending sahaja**; runner tidak diaudit semula.
+
+### Susulan tiga boss: render sisi (2026-10-27)
+
+Bowat, Mega Bowat dan finale kini meluaskan canvas/kamera juga, supaya watak,
+periuk, hujan dan lapisan gelap dapat dilukis di atas scenery sisi tambahan.
+Fizik asal dikekalkan; periuk spawn/despawn di luar skrin, Qish mempunyai margin
+sprite di tepi. Semakan hanya tiga isu ini; tiada audit penuh baharu.
+
+TypeScript/Vite dan semakan fokus lulus: sprite Qish penuh pada kedua-dua hujung,
+periuk kelihatan melepasi sempadan lama, dan partikel hujan sampai ke kedua-dua sisi.
+Bukti: `art/mobile-fullscreen-2026-10-27/qa/wide-fixes/verification.json`.

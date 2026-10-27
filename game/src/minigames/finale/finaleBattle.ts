@@ -111,7 +111,7 @@ export class FinaleBattle extends Phaser.Scene {
     });
     this.events.on("widearenaresize", () => {
       const pad = this.data.get("widePad") ?? 0;
-      this.rain.setEmitterX({ min: -pad - 100, max: W + pad + 100 });
+      this.rain.particleX = { min: -pad - 100, max: W + pad + 100 };
       this.rain.setFrequency(8 * W / (W + pad * 2));
       this.drawSky(this.storm);
     });
