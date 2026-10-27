@@ -1,0 +1,90 @@
+/* Full-bleed scenery with typography and gameplay tied to vertical scale. */
+#game-viewport[data-wide="true"] .title-screen {
+  background-image: url('/assets/mobile/title.webp');
+  background-size: cover;
+}
+#game-viewport[data-layout="landscape"] .ending-poster { object-fit: cover; }
+#game-viewport[data-layout="landscape"] .zone-label {
+  left: calc(22px + var(--game-safe-left));
+  top: calc(24px + var(--game-safe-top));
+}
+#game-viewport[data-layout="landscape"] .hud {
+  left: calc(21px + var(--game-safe-left));
+  top: calc(116px + var(--game-safe-top));
+}
+#game-viewport[data-layout="landscape"] .collect-hud {
+  right: calc(22px + var(--game-safe-right));
+  top: calc(24px + var(--game-safe-top));
+}
+#game-viewport[data-layout="landscape"] .dialog {
+  width: min(900px, calc(100% - var(--game-safe-left) - var(--game-safe-right) - 40px));
+  bottom: calc(24px + var(--game-safe-bottom));
+}
+.dialog .text { overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: thin; }
+#game-viewport[data-layout="landscape"] .rh-count { top: calc(16px + var(--game-safe-top)); }
+#game-viewport[data-layout="landscape"] .game-picker {
+  padding: calc(24px + var(--game-safe-top)) calc(24px + var(--game-safe-right)) calc(24px + var(--game-safe-bottom)) calc(24px + var(--game-safe-left));
+}
+#game-viewport[data-layout="landscape"] .picker-panel {
+  max-height: calc(100cqh - 48px - var(--game-safe-top) - var(--game-safe-bottom));
+}
+/* Entire artwork fills the screen; face, controls and reading area stay central. */
+#game-viewport[data-layout="landscape"] .ending-message { width: min(390px, calc(100% - 40px)); }
+#game-viewport[data-layout="landscape"] .rep-panel { bottom: calc(28px + var(--game-safe-bottom)); }
+#game-viewport[data-layout="landscape"] .phone-hint { bottom: calc(4% + var(--game-safe-bottom)); }
+#game-viewport[data-layout="landscape"] .reveal .caption { bottom: calc(30px + var(--game-safe-bottom)); }
+#game-viewport[data-layout="landscape"] .reveal-label { top: calc(30px + var(--game-safe-top)); }
+
+/* Backgrounds are full width; the arena always retains its original 16:9 frame. */
+.storybook-host { overflow: hidden; }
+.storybook-host > canvas { touch-action: none; }
+body:has(.storybook-host[data-boss="bolatex"], .finale-touch-menu:not([hidden])) #touch-ui > .touch { display: none; }
+/* These two games have direct card/move taps. Keep B available if assist is offered. */
+body[data-input-device="touch"]:has(.storybook-host[data-boss="bolatex"] .mg-skip) #touch-ui > .touch { display: block; }
+body:has(.storybook-host[data-boss="bolatex"]) #touch-ui :is(.stick,.btn-a) { display: none; }
+.finale-touch-menu {
+  position: absolute; z-index: 4; left: 50%; translate: -50% 0;
+  bottom: calc(20px + var(--game-safe-bottom));
+  width: min(1280px, calc(100% - var(--game-safe-left) - var(--game-safe-right) - 40px));
+  display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; padding: 12px;
+  background: #fff7e8; border: 2px solid #c18aa3; border-radius: 18px;
+  box-shadow: 0 4px 0 #9f647e;
+}
+.finale-touch-menu.single { grid-template-columns: 1fr; width: min(520px,calc(100% - 40px)); }
+#game-viewport[data-layout="portrait"] .finale-touch-menu:not(.single) { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.finale-touch-menu button {
+  display: grid; align-content: center; gap: 5px;
+  min-height: calc(44px / var(--game-scale)); padding: 8px 15px;
+  border: 1px solid #c58fa6; border-radius: 10px; background: linear-gradient(#ffe1ec,#f3c8d9);
+  color: #754459; text-align: left; cursor: pointer;
+}
+.finale-touch-menu strong { font: 400 max(18px,calc(12px / var(--game-scale)))/1.1 var(--font-title); }
+.finale-touch-menu small { font: 800 max(13px,calc(10px / var(--game-scale)))/1.1 var(--font-body); }
+.finale-touch-menu button:active { background: #ebafc8; }
+
+@media (max-height: 500px) and (orientation: landscape) {
+  #touch-ui .stick { left: calc(18px + env(safe-area-inset-left)); bottom: calc(18px + env(safe-area-inset-bottom)); }
+  #touch-ui .btn-a { right: calc(18px + env(safe-area-inset-right)); bottom: calc(40px + env(safe-area-inset-bottom)); }
+  #touch-ui .btn-b { right: calc(94px + env(safe-area-inset-right)); bottom: calc(18px + env(safe-area-inset-bottom)); }
+}
+
+.mobile-fullscreen {
+  position: absolute; z-index: 4;
+  top: calc(var(--game-safe-top) + 12px / var(--game-scale));
+  right: calc(var(--game-safe-right) + 12px / var(--game-scale));
+  width: calc(44px / var(--game-scale)); height: calc(44px / var(--game-scale));
+  display: grid; place-items: center; padding: 0; border: 1px solid #b87a96;
+  border-radius: 14px; background: #fff9ebd9; color: #9b5279;
+  font: 700 calc(27px / var(--game-scale))/1 var(--font-body); cursor: pointer;
+}
+:fullscreen .mobile-fullscreen { display: none; }
+@media (display-mode: standalone) { .mobile-fullscreen { display: none; } }
+
+/* Extra hit area preserves the visible desktop button sizes. */
+body[data-input-device="touch"] :is(.picker-close,.picker-confirm,.letter-next) { position: relative; }
+body[data-input-device="touch"] :is(.tm-btn,.picker-close,.picker-confirm,.choice,.letter-next,.ending-continue,.map-stop)::after {
+  content: ''; position: absolute; z-index: 1; left: 50%; top: 50%; translate: -50% -50%;
+  width: max(100%,calc(44px / var(--game-scale))); height: max(100%,calc(44px / var(--game-scale)));
+}
+body[data-input-device="touch"] .title-screen .title-menu { row-gap: max(12px,calc(22px / var(--game-scale))); }
+body[data-input-device="touch"] .dialog .choices { column-gap: max(10px,calc(12px / var(--game-scale))); row-gap: max(10px,calc(28px / var(--game-scale))); }

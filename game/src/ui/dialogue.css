@@ -11,7 +11,7 @@
 .dialog .box::before { content: ''; position: absolute; inset: 7px; border: 1px solid #ead8e2; border-radius: 17px; pointer-events: none; }
 .dialog .name { top: -16px; left: 25px; background: #cf83a1; color: #fffaf0; border: 2px solid #fff7ee; border-radius: 12px 12px 12px 4px; padding: 5px 19px; font: 900 .85rem var(--font-body); box-shadow: 0 3px 8px #59465d17; }
 .dialog .box.right .name { right: 25px; border-radius: 12px 12px 4px 12px; }
-.dialog .text { font-size: clamp(1rem, 2.3cqw, 1.24rem); color: #604d62; font-weight: 700; line-height: 1.6; margin-top: 0; white-space: pre-wrap; overflow-wrap: anywhere; max-height: min(36cqh, 12rem); overflow: hidden; }
+.dialog .text { font-size: clamp(1rem, calc(var(--ui-vw, 1cqw) * 2.3), 1.24rem); color: #604d62; font-weight: 700; line-height: 1.6; margin-top: 0; white-space: pre-wrap; overflow-wrap: anywhere; max-height: min(36cqh, 12rem); overflow: hidden; }
 .dialog .next { display: flex; gap: 6px; align-items: center; bottom: 13px; right: 22px; font: 800 .61rem var(--font-body); color: #aa7a98; animation: none; }
 .dialog .next kbd { font-size: .65rem; background: #f4e5ec; padding: 1px 5px; border-radius: 4px; }
 .dialog .next > span { animation: dialogue-next 1.4s ease-in-out infinite; }

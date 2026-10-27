@@ -52,9 +52,16 @@ class Input {
     window.addEventListener("pointerdown", e => {
       this.lastDevice = e.pointerType === "touch" ? "touch" : "keyboard";
     }, { passive: true });
-    window.addEventListener("blur", () => {
-      this.keys.clear(); this.latched.clear(); this.touchButtons.clear(); this.touchAxis = { x: 0, y: 0 };
-    });
+    window.addEventListener("blur", () => this.reset());
+    window.addEventListener("gameviewportresize", () => this.reset());
+    document.addEventListener("visibilitychange", () => { if (document.hidden) this.reset(); });
+  }
+
+  /** Rotating, opening browser UI or switching apps must never leave an action held. */
+  reset() {
+    this.keys.clear(); this.latched.clear(); this.touchButtons.clear();
+    this.touchAxis = { x: 0, y: 0 }; this.stick = { x: 0, y: 0 };
+    this.now.clear(); this.prev.clear();
   }
 
   setTouchAxis(x: number, y: number) {

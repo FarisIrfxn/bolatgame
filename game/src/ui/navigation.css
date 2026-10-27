@@ -3,7 +3,7 @@
 .title-inner { width:min(760px,67cqw);padding:0 0 3cqh;margin:0;align-self:center; }
 .title-screen .logo { width:100%; }
 .title-screen .logo img { max-height:55cqh;filter:drop-shadow(0 8px 5px #9e62862c); }
-.title-screen .press { margin:16px 0 0;font-size:clamp(1.5rem,3cqw,2.2rem); }
+.title-screen .press { margin:16px 0 0;font-size:clamp(1.5rem,calc(var(--ui-vw, 1cqw) * 3),2.2rem); }
 .title-runner { left:14%;bottom:15%;height:clamp(110px,22cqh,180px);width:160px; }
 .title-runner.bowat { left:86%;bottom:15%;height:clamp(95px,19cqh,155px); }
 .title-menu { margin-top:15px;max-height:25cqh; }

@@ -1,5 +1,36 @@
 # QC UI & HUD The Adventure of Qish
 
+
+## Fullscreen mobile port (2026-10-27)
+
+Paparan landscape kini **mengisi skrin penuh** dengan lebar adaptif dan tinggi logik
+720. UI/HUD mengekalkan skala rujukan desktop, dengan placement mengikut sisi/notch.
+Dunia 3D menunjukkan kawasan tambahan. Sepuluh panorama Imagegen sekitar 3:1
+meliputi title, lapan boss dan Tamat; sumber 16:9 asal disimpan.
+
+- Arena/hitbox boss kekal 1280×720 di atas latar lebar; input kekal tepat selepas rotate.
+  Runner merender satu panorama berterusan dengan road bergerak dan tiga lorong asal.
+- Finale memakai menu sentuh minimum 44px; memory ditap terus. Hit area butang kecil
+  diluaskan tanpa membesarkan bentuknya. Fullscreen boleh dipilih pada title jika disokong.
+- Notch/home indicator dikecualikan daripada HUD/panel penting. Pointer capture, multitouch,
+  rotate, blur dan app switch diuji. Dialog dan surat boleh diskrol dengan jari tanpa skip.
+- Render dunia fon: maksimum DPR 1.5, shadow 1024px; clock/Phaser maksimum 60 FPS untuk
+  mengelakkan render 90/120 FPS yang tidak perlu. Kelajuan/game time dikekalkan.
+
+**Validasi:** TypeScript/Vite lulus. Sembilan zon; semua lapan boss; title, HUD, peta,
+reveal, phone; mimpi hingga ending sebenar lulus. Lapan saiz landscape/desktop/tablet,
+serta portrait panel bersama. Menu finale ditap hingga damage sebenar; tap memory,
+tiga lorong runner, gesture surat/dialog, pending mic + touch kek dan save ending lulus.
+Simulasi safe area asimetri serta 120 Hz lulus. Production 5180 pada DPR 3 dan semua
+JS/CSS dimuat sepadan byte build. Tiada page error dalam laporan selesai.
+
+**Batas ujian:** Chromium emulation; fon fizikal, Safari, FPS, haba dan bateri peranti
+belum diuji. Had 60 FPS ialah konfigurasi, bukan hasil penanda aras hardware.
+
+[Bukti, gambar, sumber dan prompt](../art/mobile-fullscreen-2026-10-27/README.md) ·
+[Laporan gabungan](../art/mobile-fullscreen-2026-10-27/qa/summary.json).
+
+
 ## Mobile landscape sama komposisi desktop (2026-10-27)
 
 Permintaan Faris: main di fon yang dipusing landscape mesti mengekalkan rupa desktop.

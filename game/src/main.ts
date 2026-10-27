@@ -5,6 +5,7 @@ import "./ui/paper.css";
 import "./ui/adventure-hud.css";
 import "./ui/navigation.css";
 import "./ui/qc.css";
+import "./ui/mobile.css";
 import "./core/viewport";
 import "./ui/controlHints";
 import { input } from "./core/input";
@@ -84,6 +85,7 @@ import { hideHud, refreshHud, setCollect, setWorkout, showHud } from "./ui/hud";
 import { showPhone } from "./ui/phone";
 import { repMeter } from "./ui/reps";
 import { mountTouchControls } from "./ui/touch";
+import { mountFullscreenButton } from "./ui/fullscreen";
 import { zoneTitle } from "./ui/zoneTitle";
 import { mountTitleChase } from "./ui/titleChase";
 import { showTravelMap } from "./ui/travelMap";
@@ -623,6 +625,7 @@ async function title() {
   );
   ui().appendChild(screen);
   mountTitleChase(screen);
+  mountFullscreenButton(screen);
   let clicked = false;
   screen.addEventListener("pointerdown", () => (clicked = true));
   await waitFor(() => input.pressed("a") || input.pressed("start") || clicked);
@@ -674,7 +677,7 @@ async function testReveal(n: number) {
 }
 
 // Test hook for headless playthroughs (dev server only).
-if (import.meta.env.DEV) Object.assign(window, { __pokelove: { overworld, save, travel, playEnding, say, boardSampan, playBoss, activeMinigameScene, music, myviTravel, replayConsole } });
+if (import.meta.env.DEV) Object.assign(window, { __pokelove: { overworld, save, travel, playEnding, say, boardSampan, playBoss, activeMinigameScene, music, input, myviTravel, replayConsole } });
 
 export async function startGame() {
   await overworld.whenReady();

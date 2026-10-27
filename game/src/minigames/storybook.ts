@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import type { BossId } from "../content/bosses";
 import { paperBorder } from "../core/paperBorder";
 import { input } from "../core/input";
+import { gameViewport } from "../core/viewport";
 
 export const ART_ROOT = "/assets/storybook";
 const CHARACTERS = ["bowat", "bowatback", "faris", "bolat", "bolatex", "snorlax", "blep", "megabowat", "qishex", "megaqish", "busker", "cajon", "crowd"] as const;
@@ -42,7 +43,13 @@ export function preloadStorybook(scene: Phaser.Scene, boss: BossId, aliases: Rec
 }
 
 export function illustratedBackdrop(scene: Phaser.Scene) {
-  return scene.add.image(0, 0, "art_background").setOrigin(0).setDisplaySize(1280, 720).setDepth(-1000);
+  const background = scene.add.image(0, 0, "art_background").setOrigin(0).setDisplaySize(1280, 720).setDepth(-1000);
+  // Wide phones see the matching generated panorama behind the transparent
+  // arena; hitboxes and every gameplay coordinate remain in the original arena.
+  const sync = () => background.setVisible(gameViewport.width / gameViewport.height <= 1280 / 720 + .005);
+  sync(); window.addEventListener("gameviewportresize", sync);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => window.removeEventListener("gameviewportresize", sync));
+  return background;
 }
 
 type PaperBounds = { x: number; y: number; w: number; h: number };

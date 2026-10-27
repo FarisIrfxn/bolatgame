@@ -41,8 +41,8 @@ Panduan commit/ignore, hasil audit dan isu sebelum release:
 
 ## Skrin tajuk
 
-Sebelum title, loading screen menggunakan latar pastel mimpi dan Bowat idle. Semua 471 aset
-game (sekitar 68 MB, termasuk muzik) dimuat sebelum Press Start muncul. Bar MB/peratus
+Sebelum title, loading screen menggunakan latar pastel mimpi dan Bowat idle. Semua 481 aset
+game (sekitar 69 MB, termasuk muzik) dimuat sebelum Press Start muncul. Bar MB/peratus
 berdasarkan byte sebenar, bukan timer. Selepas download, model dan sprite disediakan sebelum
 kawalan title diaktifkan. Fail yang gagal boleh dicuba semula tanpa mengulang fail yang siap.
 
@@ -74,20 +74,32 @@ Audit browser: `node pipeline/audit/navigation.mjs` dari root repo; `--small` un
 
 ## Paparan desktop dan fon landscape
 
-Landscape menggunakan permukaan logik 1280×720 yang diskala sekata, termasuk title,
-HUD, kamera, dialog, boss dan ending. Skrin berlainan nisbah mendapat bingkai; safe area
-notch/home indicator dikecualikan. Portrait menggunakan layout responsif sedia ada.
-`src/core/viewport.ts` mengurus saiz dan event `gameviewportresize`.
+Landscape mengisi seluruh ruang browser dengan tinggi logik 720; lebarnya mengikut
+nisbah sebenar skrin. Dunia 3D menunjukkan kawasan tambahan di sisi. Title, boss dan
+Tamat memakai panorama dijana di `public/assets/mobile/`. Safe area melindungi HUD,
+panel dan sentuhan; latar diteruskan di bawah notch/home indicator. Portrait kekal
+responsif. `src/core/viewport.ts` mengikuti visual viewport termasuk perubahan browser UI.
 
-CSS game menggunakan `cqw/cqh` dan `@container game` untuk ukuran/breakpoint, supaya
-UI merujuk permukaan logik yang sama. Kekalkan media query untuk pilihan pengguna
-seperti reduced motion. Joystick/A/B dalam `#touch-ui` menggunakan piksel skrin sebenar.
-Input canvas mesti mengukur `getBoundingClientRect()` sebenar selepas rotate.
+CSS layout memakai `cqw/cqh` dan `@container game`. Teks menggunakan `--ui-vw`, iaitu
+lebar rujukan 1280/100 pada landscape, supaya huruf tidak membesar ikut lebar fon.
+`ui/mobile.css` memusatkan panel dan menambat HUD kepada sisi yang selamat. Joystick/A/B
+serta hit area interaktif memakai saiz piksel fizikal. Tombol fullscreen pada title
+muncul jika browser touch menyokongnya; manifest installed app meminta landscape.
 
-Audit: `node pipeline/audit/mobile-landscape.mjs`, `mobile-landscape-story.mjs` dan
-`mobile-landscape-production.mjs` dari root; screenshot/laporan dalam
-`art/mobile-landscape-2026-10-27/`. Ini emulasi browser; prestasi/perkakasan fon sebenar
-masih perlu disemak pada peranti.
+Boss Phaser mengekalkan arena/hitbox 1280×720 di atas panorama penuh. Canvas dipasang
+dalam safe area dan mengukur semula bounds sentuhan selepas rotate. Runner merender
+panorama/road penuh dengan aturan tiga lorong asal. Finale mempunyai menu move sentuh
+native (minimum 44px); memory boleh ditap terus tanpa joystick menutup grid.
+
+Input dilepaskan selepas rotate, blur, pointer cancel atau app switch. Dialog/surat
+boleh diskrol dengan jari. Renderer dunia fon dihadkan kepada DPR 1.5 dan shadow map
+1024px; frame clock dan Phaser dihadkan kepada 60 FPS pada peranti touch. Ini had
+render, bukan jaminan FPS pada semua perkakasan. Semua **481 aset / 69.3 MB** masih
+dimuat di awal, mengikut keputusan Faris; panorama menambah 1.77 MB.
+
+Audit: `pipeline/audit/mobile-fullscreen*.mjs`. Sumber/prompt Imagegen, exporter,
+screenshot dan laporan: [mobile fullscreen](../art/mobile-fullscreen-2026-10-27/README.md).
+Ujian menggunakan emulasi Chromium; fon fizikal/Safari dan prestasi peranti belum diukur.
 
 ## Kawalan
 

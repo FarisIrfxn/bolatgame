@@ -7,9 +7,15 @@ type FrameFn = (dt: number, time: number) => void;
 
 const subs = new Set<FrameFn>();
 let last = performance.now();
+let started = false;
+const frameInterval = navigator.maxTouchPoints > 0 ? 1000 / 60 : 0;
+document.addEventListener("visibilitychange", () => { last = performance.now(); });
 
 function tick(now: number) {
   requestAnimationFrame(tick);
+  // 90/120 Hz phone displays need not render this game twice as often.
+  // Keep the accumulated elapsed time when a display frame is skipped.
+  if (document.hidden || now - last < frameInterval - .5) return;
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   input.poll();
@@ -17,6 +23,9 @@ function tick(now: number) {
 }
 
 export function startLoop() {
+  if (started) return;
+  started = true;
+  last = performance.now();
   requestAnimationFrame(tick);
 }
 

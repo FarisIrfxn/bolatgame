@@ -7,6 +7,7 @@ import { paperBorder } from "../../core/paperBorder";
 import type { CustomMinigame, MinigameCtx } from "../framework";
 import { runnerRoad } from "./road";
 import { projectLane } from "./perspective";
+import { gameViewport } from "../../core/viewport";
 
 // Smooth illustrated runner. Logical coordinates retain the original three-lane rules;
 // the canvas draws at 4x resolution so signs and curves stay clean at desktop size.
@@ -17,10 +18,9 @@ interface Word { label: string; lane: number; z: number; state: "incoming" | "sm
 export function createQishRunner(host: HTMLElement, ctx: MinigameCtx): CustomMinigame {
   const canvas = el("canvas", "storybook-runner");
   canvas.width = W * 4; canvas.height = H * 4;
-  canvas.style.cssText = "position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#f4dbe5;image-rendering:auto";
+  canvas.style.cssText = "position:absolute;left:50%;top:50%;width:min(100%,calc(100cqh * 16 / 9));height:auto;transform:translate(-50%,-50%);image-rendering:auto";
   host.appendChild(canvas);
   const g = canvas.getContext("2d")!;
-  g.scale(4, 4);
   g.imageSmoothingEnabled = true;
   g.imageSmoothingQuality = "high";
   // A nearby sign passes in front of Qish; distant signs remain behind her.
@@ -29,7 +29,6 @@ export function createQishRunner(host: HTMLElement, ctx: MinigameCtx): CustomMin
   foreground.style.cssText = `${canvas.style.cssText};background:transparent;pointer-events:none;z-index:3`;
   host.appendChild(foreground);
   const nearInk = foreground.getContext("2d")!;
-  nearInk.scale(4, 4);
   const art = new Map<string, HTMLImageElement | HTMLCanvasElement>();
   const walkers = ["qish", "bowat"].map(who => {
     const img = el("img", "runner-walker");
@@ -38,23 +37,37 @@ export function createQishRunner(host: HTMLElement, ctx: MinigameCtx): CustomMin
     host.appendChild(img);
     return img;
   });
-  let scale = 1, left = 0, top = 0;
+  let scale = 1, left = 0, top = 0, span = W;
+  let road: ReturnType<typeof runnerRoad>;
   const resize = () => {
-    const w = host.clientWidth, h = host.clientHeight;
+    // The viewport model is updated before this event. Container-query layout
+    // can still report the previous frame's host dimensions during a rotation.
+    const w = gameViewport.width, h = gameViewport.height;
     scale = Math.min(w / W, h / H); left = (w - W * scale) / 2; top = (h - H * scale) / 2;
+    const wide = w / h > W / H + .005;
+    span = wide ? w / scale : W;
+    for (const layer of [canvas, foreground]) {
+      layer.width = Math.ceil(span * 4); layer.height = H * 4;
+      layer.style.width = wide ? "100%" : "min(100%,calc(100cqh * 16 / 9))";
+    }
+    for (const ink of [g, nearInk]) {
+      ink.setTransform(4, 0, 0, 4, (span - W) * 2, 0);
+      ink.imageSmoothingEnabled = true; ink.imageSmoothingQuality = "high";
+    }
+    if (art.has("putra_road")) road = runnerRoad(art.get("bg_qishex")!, art.get("putra_road") as HTMLImageElement,
+      span, art.get("bg_qishex_wide") as HTMLImageElement);
   };
   resize(); window.addEventListener("gameviewportresize", resize);
   let ready = false, destroyed = false, endingTimer = 0;
-  let road: ReturnType<typeof runnerRoad>;
   let roadDistance = 0;
   let firstDraw!: () => void;
   const firstFrame = new Promise<void>(resolve => { firstDraw = resolve; });
-  void Promise.all(["bg_qishex", "qishex", "putra_road"].map(name => new Promise<void>((resolve, reject) => {
+  void Promise.all(["bg_qishex", "bg_qishex_wide", "qishex", "putra_road"].map(name => new Promise<void>((resolve, reject) => {
     const img = new Image(); img.onload = () => { art.set(name, name === "qishex" ? paperBorder(img,256,256) : img); resolve(); };
     img.onerror = () => reject(new Error(`Runner art missing: ${name}`));
-    img.src = name === "putra_road" ? "/assets/textures/putra_road.webp" : `/assets/storybook/${name}.${name.startsWith("bg_") ? "webp" : "png"}`;
+    img.src = name === "putra_road" ? "/assets/textures/putra_road.webp" : name === "bg_qishex_wide" ? "/assets/mobile/bg_qishex.webp" : `/assets/storybook/${name}.${name.startsWith("bg_") ? "webp" : "png"}`;
   }))).then(() => {
-    if (!destroyed) { road = runnerRoad(art.get("bg_qishex")!, art.get("putra_road") as HTMLImageElement); ready = true; }
+    if (!destroyed) { resize(); ready = true; }
   }).catch(error => console.error(error));
   for (const who of ["qish", "bowat"]) for (let i = 0; i < 4; i++) new Image().src = `/assets/chars/${who}_back_walk_${i}.png`;
   const hud = el("div", "runner-hud", '<div class="rh-count"></div><div class="rh-msg"></div>');
@@ -118,8 +131,9 @@ export function createQishRunner(host: HTMLElement, ctx: MinigameCtx): CustomMin
     }
   };
   const draw = (t: number) => {
-    nearInk.clearRect(0, 0, W, H);
-    g.fillStyle = "#f4dbe5"; g.fillRect(0, 0, W, H);
+    const pad = (span - W) / 2;
+    nearInk.clearRect(-pad, 0, span, H);
+    g.fillStyle = "#f4dbe5"; g.fillRect(-pad, 0, span, H);
     if (!ready) { g.fillStyle = "#aa6081"; g.font = "bold 12px Nunito"; g.textAlign = "center"; g.fillText("Sekejap ya…", 160, 90); return; }
     road.draw(g, roadDistance);
     // Feet sit on the near sidewalk rather than floating above the distant road.

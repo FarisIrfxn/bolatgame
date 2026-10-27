@@ -109,7 +109,8 @@ export class Overworld {
   private async init() {
     await Promise.all([document.fonts.load("74px 'Bagel Fat One'"), document.fonts.load("bold 64px 'Gaegu'")]).catch(() => {});
     this.sun.castShadow = true;
-    this.sun.shadow.mapSize.set(2048, 2048);
+    const shadowSize = navigator.maxTouchPoints > 0 ? 1024 : 2048;
+    this.sun.shadow.mapSize.set(shadowSize, shadowSize);
     const sc = this.sun.shadow.camera;
     sc.left = -26;
     sc.right = 26;
@@ -367,7 +368,8 @@ export class Overworld {
     const fov = this.zone?.planet?.fov ?? [34, 48];
     this.camera.fov = w / h < 1 ? fov[1] : fov[0];
     this.camera.updateProjectionMatrix();
-    this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio * scale));
+    const screenDpr = navigator.maxTouchPoints > 0 ? Math.min(1.5, window.devicePixelRatio) : window.devicePixelRatio;
+    this.renderer.setPixelRatio(Math.min(2, screenDpr * scale));
     this.renderer.setSize(w, h);
     this.post.resize(w, h);
   }

@@ -4,7 +4,7 @@ import { el } from "../ui/dom";
 /** The final keepsake, shared by the ending flow and its focused visual preview. */
 export function createEndScreen() {
   return el("div", "the-end has-art", `
-    <img class="ending-poster" src="${THE_END.art}" alt="Faris, Qish, Bolat, Raja Nonchalant, Bowat dan Encik Sloth">
+    <picture>${THE_END.art === "/assets/ending/ensemble-comic.webp" ? '<source media="(min-aspect-ratio: 17/9)" srcset="/assets/mobile/ending.webp">' : ""}<img class="ending-poster" src="${THE_END.art}" alt="Faris, Qish, Bolat, Raja Nonchalant, Bowat dan Encik Sloth"></picture>
     <div class="ending-message">
       <img class="ending-logo" src="/assets/ui/qish-logo.webp" alt="The Adventure of Qish">
       <section class="ending-keepsake" aria-label="Ucapan penutup">

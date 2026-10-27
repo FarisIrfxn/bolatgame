@@ -1863,3 +1863,32 @@ Senarai panjang Faris (title → ending, semua zon dan boss). Dimulakan oleh Cod
 - Bukti/laporan dan skrip: `art/mobile-landscape-2026-10-27/README.md`,
   `pipeline/audit/mobile-landscape*.mjs`, `docs/UI_QC.md`. Emulasi Chromium;
   fon fizikal, Safari dan prestasi/FPS peranti belum diuji dalam pas ini.
+
+
+### Mobile port fullscreen adaptif (2026-10-27)
+
+- Faris memilih fill penuh selepas semakan bingkai pink pada fon memanjang. Landscape
+  kini menggunakan tinggi logik 720 dan lebar mengikut visual viewport; latar memenuhi
+  skrin sementara HUD/font mengekalkan skala desktop dan bergerak ke sisi yang selamat.
+  Kamera dunia menunjukkan lebih banyak kawasan kiri/kanan, tanpa mengubah collider.
+- Built-in Imagegen menghasilkan 10 panorama sekitar 3:1: title, lapan boss dan Tamat.
+  Sumber/prompt `art/mobile-fullscreen-2026-10-27/`; WebP runtime `assets/mobile/`.
+  Asal 16:9 kekal. Tambahan 1.77 MB; semua 481 aset/69.3 MB masih dimuat di awal.
+- Boss mengekalkan arena/hitbox 1280×720 dan bounds touch tepat selepas rotate. Runner
+  mempunyai panorama/road berterusan dan projection tiga lorong asal. Finale memakai
+  menu move native touch minimum 44px; memory ditap terus tanpa joystick menutup kad.
+- Safe area melindungi HUD/panel/touch di bawah notch/home indicator. Butang fullscreen
+  pilihan pada title, manifest landscape, status bar iOS translucent. Pointer cancel,
+  capture hilang, rotate, blur dan app switch melepaskan input. Dialog/surat boleh
+  diskrol dengan jari; swipe dialog tidak mengesahkan/skip ayat.
+- GPU fon: had DPR dunia 1.5, shadow map 1024px, clock dan Phaser maksimum 60 FPS.
+  Simulasi paparan 120 Hz mengekalkan game time sambil mengurangkan update ke 60;
+  desktop bukan touch kekal. Tiada tuntutan FPS hardware dibuat.
+- TypeScript/Vite lulus. Sembilan zon, semua lapan boss, lapan saiz landscape/desktop/
+  tablet, portrait panel bersama, mimpi/senaman/ending sebenar, tap move finale hingga
+  damage, memory, tiga lorong runner, surat, pending mic + touch kek, save ending,
+  gangguan multitouch dan notch asimetri lulus. Production 5180 pada DPR 3 serta
+  byte JS/CSS build sepadan lulus tanpa page error.
+- Bukti: `art/mobile-fullscreen-2026-10-27/README.md`, `qa/summary.json`,
+  `pipeline/audit/mobile-fullscreen*.mjs`, `docs/UI_QC.md`. Emulasi Chromium sahaja;
+  fon fizikal, Safari, FPS, haba dan penggunaan bateri peranti belum diukur.

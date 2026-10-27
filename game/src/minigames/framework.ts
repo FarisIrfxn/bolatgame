@@ -8,6 +8,7 @@ import { BOSSES } from "../content/bosses";
 import { bossArt, styleIllustratedScene } from "./storybook";
 import { el } from "../ui/dom";
 import { controlHints } from "../ui/controlHints";
+import { ARENA_STYLE, gameViewport } from "../core/viewport";
 
 // Every boss minigame runs through here: intro card -> Phaser scene -> win/skip.
 // Scenes only call ctx.win() / ctx.fail(); the "skip after 3 fails" safety net
@@ -88,7 +89,7 @@ async function introCard(def: MinigameDef, host: HTMLElement, onReady?: () => vo
 /** Warm the intro while the overworld is still visible, rather than holding an empty fade. */
 export async function prepareMinigame(def: MinigameDef) {
   const backdrop = `/assets/storybook/bg_${def.id}.webp`;
-  const images = [backdrop, bossArt(def.id)].map(src => {
+  const images = [backdrop, `/assets/mobile/bg_${def.id}.webp`, bossArt(def.id)].map(src => {
     const image = new Image(); image.src = src; return image.decode();
   });
   await Promise.all([document.fonts.load('24px "Nunito"'), document.fonts.load('24px "Bagel Fat One"'),
@@ -100,7 +101,13 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
   host.classList.add("storybook-host");
   await prepareMinigame(def);
   const backdrop = `/assets/storybook/bg_${def.id}.webp`;
-  host.style.background = `#f4dbe5 url("${backdrop}") center / cover no-repeat`;
+  host.dataset.boss = def.id;
+  const syncBackdrop = () => {
+    const wide = gameViewport.width / gameViewport.height > 1280 / 720 + .005;
+    host.style.background = `#f4dbe5 url("${wide ? `/assets/mobile/bg_${def.id}.webp` : backdrop}") center / cover no-repeat`;
+  };
+  syncBackdrop();
+  window.addEventListener("gameviewportresize", syncBackdrop);
   const intro = await introCard(def, host, onIntroReady);
   if (def.id !== "bolat") music.play(BOSS_MUSIC[def.id]);
   return new Promise((resolve) => {
@@ -116,6 +123,7 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
       intro.remove();
       stopSkip?.();
       skipHint?.remove();
+      window.removeEventListener("gameviewportresize", syncBackdrop);
       resolve(r);
     };
     const ctx: MinigameCtx = {
@@ -149,11 +157,12 @@ export async function runMinigame(def: MinigameDef, host: HTMLElement, onIntroRe
       pixelArt: false,
       roundPixels: false,
       antialias: true,
+      fps: { target: 60, limit: navigator.maxTouchPoints > 0 ? 60 : 0 },
       transparent: true,
       // The shared viewport already scales landscape. FIT measures the transformed
       // parent and would shrink the arena a second time on phones.
       scale: { mode: Phaser.Scale.NONE, autoCenter: Phaser.Scale.NO_CENTER },
-      canvasStyle: "position:absolute;left:0;top:50%;width:100% !important;height:auto !important;transform:translateY(-50%)",
+      canvasStyle: ARENA_STYLE,
       physics: { default: "arcade", arcade: { gravity: { x: 0, y: 0 } } },
       input: { keyboard: false, gamepad: false },
       audio: { noAudio: true },

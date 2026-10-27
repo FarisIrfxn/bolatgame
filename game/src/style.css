@@ -22,24 +22,26 @@ html, body {
   font-family: var(--font-body);
   -webkit-user-select: none;
   user-select: none;
-  touch-action: none;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
-#game-shell { position: fixed; inset: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); overflow: hidden; }
+#game-shell { position: fixed; inset: 0; overflow: hidden; }
+#safe-area-probe { position: fixed; inset: 0; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); visibility: hidden; pointer-events: none; }
 #game-viewport {
   position: absolute; transform-origin: 0 0; overflow: hidden;
   container: game / size;
-  /* The shell already excludes the notch and home indicator. */
+  /* Insets are measured in device pixels, then converted to logical pixels. */
   --game-safe-top: 0px; --game-safe-right: 0px; --game-safe-bottom: 0px; --game-safe-left: 0px;
 }
-/* cqw/cqh and size container queries below follow this logical surface, so a
-   short landscape phone uses the same spacing/type as a desktop. */
+/* Layout uses the full surface. Type uses --ui-vw to retain its vertical scale. */
 #stage, #ui { position: absolute; inset: 0; }
 #touch-ui { position: fixed; inset: 0; z-index: 20; pointer-events: none; }
 /* Only the Three.js overworld canvas fills the screen; Phaser letterboxes its own canvas. */
-#stage > canvas { display: block; width: 100% !important; height: 100% !important; }
+#stage > canvas { display: block; width: 100% !important; height: 100% !important; touch-action: none; }
 #ui { pointer-events: none; z-index: 10; }
 #ui > * { pointer-events: auto; }
 
@@ -52,7 +54,7 @@ html, body {
 }
 .title-screen .logo {
   font-family: var(--font-title);
-  font-size: clamp(3rem, 11cqw, 7.5rem);
+  font-size: clamp(3rem, calc(var(--ui-vw, 1cqw) * 11), 7.5rem);
   line-height: .9;
   color: #ffcb05;
   -webkit-text-stroke: 4px #2a4bb8;
@@ -60,9 +62,9 @@ html, body {
   text-shadow: 0 7px 0 #13205e;
   margin: 0;
 }
-.title-screen .sub { font-family: var(--font-hand); font-size: clamp(1.3rem, 3.5cqw, 2rem); margin-top: 18px; color: #dfe5ff; }
+.title-screen .sub { font-family: var(--font-hand); font-size: clamp(1.3rem, calc(var(--ui-vw, 1cqw) * 3.5), 2rem); margin-top: 18px; color: #dfe5ff; }
 .title-screen .press {
-  margin-top: 48px; font-family: var(--font-hand); font-size: clamp(1.4rem, 4cqw, 2.2rem);
+  margin-top: 48px; font-family: var(--font-hand); font-size: clamp(1.4rem, calc(var(--ui-vw, 1cqw) * 4), 2.2rem);
   animation: blink 1.2s steps(2, start) infinite;
 }
 .title-screen .heart {
@@ -92,7 +94,7 @@ html, body {
 @keyframes dreamFloat { to { transform: translateY(-110cqh) translateX(30px); opacity: 0; } }
 .dream-tag {
   position: absolute; top: 7%; left: 0; right: 0; text-align: center;
-  font-family: var(--font-hand); font-size: clamp(1.4rem, 3.5cqw, 2rem); color: #a58bc9; letter-spacing: .3em;
+  font-family: var(--font-hand); font-size: clamp(1.4rem, calc(var(--ui-vw, 1cqw) * 3.5), 2rem); color: #a58bc9; letter-spacing: .3em;
   animation: bob 3s ease-in-out infinite;
 }
 .dream-scene {
@@ -115,7 +117,7 @@ html, body {
 @keyframes sob { 50% { translate: 0 3%; } }
 .dream-pop {
   position: absolute; z-index: 6; font-family: var(--font-title); color: #fff; -webkit-text-stroke: 3px #17151f; paint-order: stroke fill;
-  font-size: clamp(1.6rem, 5cqw, 2.6rem); animation: popIn .35s cubic-bezier(.2,1.6,.4,1) both;
+  font-size: clamp(1.6rem, calc(var(--ui-vw, 1cqw) * 5), 2.6rem); animation: popIn .35s cubic-bezier(.2,1.6,.4,1) both;
 }
 .dream-pop.pinch { right: 20%; bottom: 40%; color: #ff8fb1; rotate: -10deg; animation: popIn .35s cubic-bezier(.2,1.6,.4,1) both, fadeOut .4s .9s forwards; }
 .dream-pop.sulk { right: 6%; top: 0; color: #ff5a4a; }
@@ -173,7 +175,7 @@ html, body {
   border-radius: 10px; padding: 1px 12px; font-family: var(--font-hand); font-size: 1.3rem;
 }
 .dialog .box.right .name { left: auto; right: 18px; }
-.dialog .text { font-size: clamp(1.05rem, 2.6cqw, 1.35rem); font-weight: 600; line-height: 1.45; margin-top: 8px; }
+.dialog .text { font-size: clamp(1.05rem, calc(var(--ui-vw, 1cqw) * 2.6), 1.35rem); font-weight: 600; line-height: 1.45; margin-top: 8px; }
 .dialog .next { position: absolute; right: 16px; bottom: 8px; font-size: 1.2rem; animation: bob 1s ease-in-out infinite; }
 .dialog .choices { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
 .dialog .choice {
@@ -192,7 +194,7 @@ html, body {
 }
 .zone-title h1 {
   margin: 0; font-family: var(--font-title); font-weight: normal; line-height: 1.05;
-  font-size: clamp(2.4rem, 8.5cqw, 5.4rem); color: var(--paper); letter-spacing: .02em;
+  font-size: clamp(2.4rem, calc(var(--ui-vw, 1cqw) * 8.5), 5.4rem); color: var(--paper); letter-spacing: .02em;
   -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill;
   text-shadow: 0 6px 0 var(--ink), 0 10px 22px rgba(0,0,0,.45);
 }
@@ -203,7 +205,7 @@ html, body {
 }
 .zone-title .rule i { display: block; width: clamp(50px, 14cqw, 140px); height: 3px; border-radius: 2px; background: var(--gold); box-shadow: 0 2px 0 var(--ink); }
 .zone-title .sub {
-  font-family: var(--font-hand); font-weight: 700; font-size: clamp(1.25rem, 3.6cqw, 2rem); color: var(--gold);
+  font-family: var(--font-hand); font-weight: 700; font-size: clamp(1.25rem, calc(var(--ui-vw, 1cqw) * 3.6), 2rem); color: var(--gold);
   text-shadow: 0 2px 0 var(--ink), 0 0 10px rgba(0,0,0,.5); animation: zt-fade .6s .7s ease-out both;
 }
 .zone-title.out { animation: zt-out .6s ease-in forwards; }
@@ -364,12 +366,12 @@ html, body {
   display: grid; gap: 10px; justify-items: center; padding: 0 16px;
 }
 .reveal .caption h2 {
-  margin: 0; font-family: var(--font-title); font-weight: 400; font-size: clamp(1.8rem, 6cqw, 3rem);
+  margin: 0; font-family: var(--font-title); font-weight: 400; font-size: clamp(1.8rem, calc(var(--ui-vw, 1cqw) * 6), 3rem);
   color: #ffcb05; -webkit-text-stroke: 2px #2a4bb8; paint-order: stroke fill; text-shadow: 0 4px 0 #13205e;
 }
 .reveal .ask {
   background: #fff; color: var(--ink); border: 4px solid var(--ink); border-radius: 16px; padding: 10px 18px;
-  font-family: var(--font-hand); font-size: clamp(1.4rem, 4cqw, 2rem); box-shadow: 0 6px 0 rgba(0,0,0,.3);
+  font-family: var(--font-hand); font-size: clamp(1.4rem, calc(var(--ui-vw, 1cqw) * 4), 2rem); box-shadow: 0 6px 0 rgba(0,0,0,.3);
   animation: noteIn .6s cubic-bezier(.2,1.4,.4,1) both;
 }
 .reveal .hint { font-family: var(--font-hand); font-size: 1.3rem; opacity: .85; }
@@ -431,7 +433,7 @@ html, body {
 }
 .mg-place { font-family: var(--font-hand); font-size: 1.3rem; color: #6b6480; }
 .mg-box h2 {
-  margin: 4px 0 10px; font-family: var(--font-title); font-weight: 400; font-size: clamp(2.2rem, 7cqw, 3.4rem);
+  margin: 4px 0 10px; font-family: var(--font-title); font-weight: 400; font-size: clamp(2.2rem, calc(var(--ui-vw, 1cqw) * 7), 3.4rem);
   color: var(--accent, var(--gold)); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill;
 }
 .mg-plan { font-family: var(--font-hand); font-size: 1.25rem; margin: 0 0 10px; color: #3b3550; }
@@ -449,7 +451,7 @@ html, body {
 
 .surprise {
   position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%);
-  font-family: var(--font-title); font-size: clamp(3rem, 12cqw, 8rem); color: #ffcb05; white-space: nowrap;
+  font-family: var(--font-title); font-size: clamp(3rem, calc(var(--ui-vw, 1cqw) * 12), 8rem); color: #ffcb05; white-space: nowrap;
   -webkit-text-stroke: 4px #2a4bb8; paint-order: stroke fill; text-shadow: 0 8px 0 #13205e;
   animation: pop .6s cubic-bezier(.2,1.6,.4,1) both;
 }
@@ -460,14 +462,14 @@ html, body {
 .cake-hint, .bday-banner {
   position: absolute; left: 50%; transform: translateX(-50%); text-align: center;
   background: var(--paper); border: 4px solid var(--ink); border-radius: 16px; padding: 8px 20px;
-  font-family: var(--font-hand); font-size: clamp(1.5rem, 4cqw, 2.2rem); box-shadow: 0 6px 0 rgba(0,0,0,.3);
+  font-family: var(--font-hand); font-size: clamp(1.5rem, calc(var(--ui-vw, 1cqw) * 4), 2.2rem); box-shadow: 0 6px 0 rgba(0,0,0,.3);
 }
 .cake-hint { top: max(18px, env(safe-area-inset-top)); }
 .cake-hint small { font-size: .7em; }
 .cake-meter { position: absolute; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(60cqw, 320px); height: 18px; border: 3px solid var(--ink); border-radius: 999px; background: #fff; overflow: hidden; }
 .cake-meter div { height: 100%; width: 0; background: linear-gradient(90deg, #7dd3fc, #ffcb05); transition: width .08s; }
 .bday-banner {
-  top: 50%; transform: translate(-50%, -50%); font-family: var(--font-title); font-size: clamp(2rem, 7cqw, 4.4rem); line-height: 1.05;
+  top: 50%; transform: translate(-50%, -50%); font-family: var(--font-title); font-size: clamp(2rem, calc(var(--ui-vw, 1cqw) * 7), 4.4rem); line-height: 1.05;
   color: #e3350d; padding: 20px 34px; animation: noteIn .7s cubic-bezier(.2,1.4,.4,1) both; white-space: nowrap;
 }
 
@@ -482,8 +484,8 @@ html, body {
 .kisah-ph small { font-size: 1.1rem; }
 .kisah-strips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; max-width: 92cqw; }
 .kisah-strips img { height: min(30cqh, 260px); box-shadow: 0 6px 14px rgba(0,0,0,.25); transform: rotate(calc((var(--i) - 4.5) * 2.5deg)); animation: noteIn .6s both; animation-delay: calc(var(--i) * .12s); }
-.kisah-cap { margin: 0; font-family: var(--font-hand); font-size: clamp(1.6rem, 4.4cqw, 2.6rem); text-align: center; color: var(--ink); min-height: 2.6em; }
-.kisah-big .kisah-cap { font-family: var(--font-title); font-size: clamp(2.2rem, 7cqw, 4.6rem); color: #e3350d; }
+.kisah-cap { margin: 0; font-family: var(--font-hand); font-size: clamp(1.6rem, calc(var(--ui-vw, 1cqw) * 4.4), 2.6rem); text-align: center; color: var(--ink); min-height: 2.6em; }
+.kisah-big .kisah-cap { font-family: var(--font-title); font-size: clamp(2.2rem, calc(var(--ui-vw, 1cqw) * 7), 4.6rem); color: #e3350d; }
 .kisah-next { font-size: 1.4rem; animation: bob 1s ease-in-out infinite; }
 
 .letter-layer { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(20,12,30,.7); padding: 20px; }
@@ -492,22 +494,22 @@ html, body {
   width: min(680px, 100%); max-height: 86cqh; overflow: auto; padding: 34px 40px; border-radius: 6px;
   box-shadow: 0 20px 50px rgba(0,0,0,.45); transform: rotate(-1deg); animation: noteIn .7s cubic-bezier(.2,1.3,.4,1) both;
 }
-.letter-text { white-space: pre-wrap; font-family: var(--font-hand); font-size: clamp(1.4rem, 3.6cqw, 1.9rem); line-height: 40px; color: #2b2540; }
+.letter-text { white-space: pre-wrap; font-family: var(--font-hand); font-size: clamp(1.4rem, calc(var(--ui-vw, 1cqw) * 3.6), 1.9rem); line-height: 40px; color: #2b2540; }
 
 .card9 { background: linear-gradient(135deg, #ffe8a3, #ffcb05 40%, #f6a5c0 75%, #b9c4ff); padding: 6% 6% 5%; display: grid; grid-template-rows: auto 1fr auto auto; gap: 3%; font-family: var(--font-body); color: var(--ink); }
-.c9-top { display: flex; align-items: baseline; gap: 6px; font-size: clamp(.9rem, 2.4cqw, 1.25rem); }
+.c9-top { display: flex; align-items: baseline; gap: 6px; font-size: clamp(.9rem, calc(var(--ui-vw, 1cqw) * 2.4), 1.25rem); }
 .c9-top b { font-family: var(--font-title); font-weight: 400; flex: 1; }
 .c9-rarity { font-size: .6em; background: var(--ink); color: #ffcb05; padding: 1px 6px; border-radius: 6px; }
 .c9-hp { font-family: var(--font-title); }
 .c9-art { background: #fff; border: 3px solid var(--ink); border-radius: 6px; overflow: hidden; display: grid; place-items: center; }
 .c9-art img { width: 100%; height: 100%; object-fit: cover; }
-.c9-move b { font-family: var(--font-title); font-weight: 400; font-size: clamp(1rem, 2.6cqw, 1.4rem); }
-.c9-move p { margin: 2px 0 0; font-size: clamp(.7rem, 1.8cqw, .9rem); font-weight: 600; }
-.c9-foot { font-family: var(--font-hand); font-size: clamp(.7rem, 1.8cqw, .95rem); text-align: center; }
+.c9-move b { font-family: var(--font-title); font-weight: 400; font-size: clamp(1rem, calc(var(--ui-vw, 1cqw) * 2.6), 1.4rem); }
+.c9-move p { margin: 2px 0 0; font-size: clamp(.7rem, calc(var(--ui-vw, 1cqw) * 1.8), .9rem); font-weight: 600; }
+.c9-foot { font-family: var(--font-hand); font-size: clamp(.7rem, calc(var(--ui-vw, 1cqw) * 1.8), .95rem); text-align: center; }
 
 .the-end { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; background: radial-gradient(circle at 50% 45%, #3a63d8, #141c52); color: #fff; gap: 10px; }
-.the-end h1 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: clamp(3rem, 12cqw, 7rem); color: #ffcb05; -webkit-text-stroke: 3px #2a4bb8; paint-order: stroke fill; }
-.the-end p { margin: 0; font-family: var(--font-hand); font-size: clamp(1.6rem, 5cqw, 2.6rem); }
+.the-end h1 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: clamp(3rem, calc(var(--ui-vw, 1cqw) * 12), 7rem); color: #ffcb05; -webkit-text-stroke: 3px #2a4bb8; paint-order: stroke fill; }
+.the-end p { margin: 0; font-family: var(--font-hand); font-size: clamp(1.6rem, calc(var(--ui-vw, 1cqw) * 5), 2.6rem); }
 .the-end small { font-family: var(--font-hand); font-size: 1.2rem; opacity: .8; }
 
 /* ---------- Runner HUD ---------- */
@@ -515,12 +517,12 @@ html, body {
 .rh-count {
   position: absolute; top: max(16px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
   background: var(--paper); border: 4px solid var(--ink); border-radius: 14px; padding: 4px 16px;
-  font-family: var(--font-title); font-size: clamp(1.2rem, 3.4cqw, 1.8rem); color: #ff5c93; white-space: nowrap;
+  font-family: var(--font-title); font-size: clamp(1.2rem, calc(var(--ui-vw, 1cqw) * 3.4), 1.8rem); color: #ff5c93; white-space: nowrap;
 }
 .rh-count b { color: var(--ink); }
 .rh-msg {
   position: absolute; top: 24%; left: 0; right: 0; text-align: center;
-  font-family: var(--font-title); font-size: clamp(2rem, 7cqw, 4rem); color: #ffcb05;
+  font-family: var(--font-title); font-size: clamp(2rem, calc(var(--ui-vw, 1cqw) * 7), 4rem); color: #ffcb05;
   -webkit-text-stroke: 3px #17151f; paint-order: stroke fill; text-shadow: 0 5px 0 rgba(0,0,0,.25);
 }
 .rh-msg.pop { animation: rhPop .4s cubic-bezier(.2,1.6,.4,1); }
@@ -528,9 +530,9 @@ html, body {
 
 /* ---------- Title menu ---------- */
 .title-menu { margin: 36px auto 0; display: grid; gap: 12px; width: min(360px, 86cqw); }
-.tm-heading { font-family: var(--font-hand); font-size: clamp(1.2rem, 3.4cqw, 1.6rem); color: #ffe08a; }
+.tm-heading { font-family: var(--font-hand); font-size: clamp(1.2rem, calc(var(--ui-vw, 1cqw) * 3.4), 1.6rem); color: #ffe08a; }
 .tm-btn {
-  font-family: var(--font-title); font-size: clamp(1.2rem, 3.6cqw, 1.6rem); color: var(--ink);
+  font-family: var(--font-title); font-size: clamp(1.2rem, calc(var(--ui-vw, 1cqw) * 3.6), 1.6rem); color: var(--ink);
   background: var(--paper); border: 4px solid var(--ink); border-radius: 16px; padding: 10px 18px; cursor: pointer;
   box-shadow: 0 6px 0 rgba(0,0,0,.3); transition: transform .1s;
 }

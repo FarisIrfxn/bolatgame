@@ -277,3 +277,15 @@ realistik. Built-in Imagegen mengedit dua gambar asal dengan arah cel animation/
 Sumber baharu/prompt: `art/ending-comic-2026-10-27/README.md`. Eksporter
 `python3 pipeline/tools/ending_qc_assets.py` kini turut menghasilkan `couple-comic.webp`
 dan `ensemble-comic.webp`. Nama baharu mengelakkan cache gambar lama.
+
+
+## Panorama mobile fullscreen (2026-10-27)
+
+Sepuluh latar diluaskan ke sekitar 3:1 menggunakan **built-in Imagegen**, dengan
+art sedia ada sebagai edit target. Sumber PNG + prompt penuh:
+`art/mobile-fullscreen-2026-10-27/` (`generation.json`). Eksport WebP runtime:
+`python3 pipeline/tools/mobile_fullscreen_assets.py` → `game/public/assets/mobile/`.
+10 fail menambah 1.77 MB; keseluruhan 481 aset menjadi 69.3 MB. Sumber desktop asal
+kekal. Runner menggunakan registration panorama seragam + mask jalan di
+`runner/road.ts`, mengekalkan satu projection bagi road, pembahagi dan sasaran.
+Audit dan screenshot: README dalam folder sumber serta `pipeline/audit/mobile-fullscreen*.mjs`.

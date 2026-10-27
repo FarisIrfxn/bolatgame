@@ -327,6 +327,7 @@ async function typeLine(line: Line, box: HTMLElement, text: HTMLElement, onDone?
     const page = pageText(remaining, text);
     remaining = remaining.slice(page.length);
     text.textContent = "";
+    text.scrollTop = 0;
     await typePage({ ...line, text: page }, box, text, remaining ? undefined : onDone, !!remaining);
   } while (remaining);
 }
@@ -340,7 +341,9 @@ function typePage(line: Line, box: HTMLElement, text: HTMLElement, onDone?: () =
     let clicked = false;
     const next = el("div", "next", `<kbd data-control="a">Space</kbd> ${more ? "Sambung ayat" : "Teruskan"} <span>▸</span>`);
     const click = () => (clicked = true);
-    box.addEventListener("pointerdown", click);
+    // Native clicks are cancelled by a scroll gesture. A finger scrolling a
+    // page after rotation must not also confirm/skip that page.
+    box.addEventListener("click", click);
     const off = onFrame((dt) => {
       const full = instructionText(line.text);
       const confirm = input.pressed("a") || clicked;
@@ -365,7 +368,7 @@ function typePage(line: Line, box: HTMLElement, text: HTMLElement, onDone?: () =
       if (!onDone && confirm) {
         sfx.blip();
         off();
-        box.removeEventListener("pointerdown", click);
+        box.removeEventListener("click", click);
         next.remove();
         resolve();
       }
@@ -376,7 +379,7 @@ function typePage(line: Line, box: HTMLElement, text: HTMLElement, onDone?: () =
         if (done) {
           check();
           off();
-          box.removeEventListener("pointerdown", click);
+          box.removeEventListener("click", click);
           resolve();
         }
       });

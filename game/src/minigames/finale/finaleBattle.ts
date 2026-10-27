@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { preloadStorybook, illustratedBackdrop, paperPanel, setPose, illustratedItem } from "../storybook";
 import { input } from "../../core/input";
 import { sfx } from "../../core/sfx";
+import { el } from "../../ui/dom";
 import type { MinigameCtx, MinigameSceneData } from "../framework";
 
 // Finale: Pokémon-style turn-based battle against Raja Nonchalant at Litar Sepang.
@@ -244,6 +245,23 @@ export class FinaleBattle extends Phaser.Scene {
     });
     let sel = 0;
     let picked = -1;
+    const touchMenu = el("div", `finale-touch-menu${options.length === 1 ? " single" : ""}`);
+    options.forEach((option, i) => {
+      const button = el("button", "", `<strong>${option.label}</strong><small>${option.sub}</small>`);
+      button.type = "button";
+      button.addEventListener("click", event => { event.stopPropagation(); picked = i; });
+      touchMenu.appendChild(button);
+    });
+    this.game.canvas.parentElement!.appendChild(touchMenu);
+    const removeTouchMenu = () => touchMenu.remove();
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, removeTouchMenu);
+    const syncTouch = () => {
+      const touch = input.lastDevice === "touch";
+      touchMenu.hidden = !touch;
+      c.setVisible(!touch);
+      this.text.setVisible(!touch);
+    };
+    syncTouch();
     items.forEach((b, i) => {
       b.hit.on("pointerdown", () => (picked = i));
       b.hit.on("pointerover", () => { sel = i; paint(); });
@@ -257,6 +275,7 @@ export class FinaleBattle extends Phaser.Scene {
     paint();
     let last = { x: 0, y: 0 };
     while (picked < 0 && !this.forced) {
+      syncTouch();
       const a = input.axis();
       const dx = Math.abs(a.x) > 0.5 ? Math.sign(a.x) : 0;
       const dy = Math.abs(a.y) > 0.5 ? Math.sign(a.y) : 0;
@@ -270,6 +289,9 @@ export class FinaleBattle extends Phaser.Scene {
       await this.nextFrame();
     }
     sfx.select();
+    touchMenu.remove();
+    this.events.off(Phaser.Scenes.Events.SHUTDOWN, removeTouchMenu);
+    this.text.setVisible(true);
     c.destroy();
     return picked;
   }
